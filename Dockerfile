@@ -12,18 +12,19 @@ RUN npm ci
 # --- Stage: Builder ---
 FROM base AS builder
 WORKDIR /app
-# คัดลอก node_modules จาก deps stage 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# 🔥 จุดสำคัญ: ต้องวาง ENV ไว้ใน stage builder เพื่อให้ npx prisma generate มองเห็น
-# แก้ไขเป็นรูปแบบ key=value เพื่อลบ Warning [cite: 100]
+# เพิ่ม ARG เพื่อรับค่าจากภายนอก
+ARG DATABASE_URL
+# ส่งค่า ARG เข้าไปเป็น ENV เพื่อให้ Prisma และ Next.js มองเห็นตอนรันโค้ดช่วง Build
+ENV DATABASE_URL=$DATABASE_URL
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
 
-# สร้าง Prisma Client และ Build โปรเจกต์ 
-RUN npx prisma db push
+# สร้าง Prisma Client
 RUN npx prisma generate
+
+# Build โปรเจกต์ 
 RUN npm run build
 
 # --- Stage: Runner (Final Image) ---
