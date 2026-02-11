@@ -1,10 +1,10 @@
-# 1. เปลี่ยนเป็น Node 18
-FROM node:18-alpine AS base
+# 1. ใช้ Node 20-slim (เสถียรกว่า Alpine สำหรับ Prisma)
+FROM node:20-slim AS base
 
 # --- Stage: Dependencies ---
 FROM base AS deps
-# ต้องมี openssl และ libc6-compat สำหรับ Prisma บน Alpine
-RUN apk add --no-cache libc6-compat openssl
+# ติดตั้ง openssl สำหรับ Prisma
+RUN apt-get update && apt-get install -y openssl
 WORKDIR /app
 
 COPY package.json package-lock.json* ./
@@ -12,13 +12,13 @@ RUN npm ci
 
 # --- Stage: Builder ---
 FROM base AS builder
-# ติดตั้ง openssl ในขั้นตอนนี้ด้วย เพราะต้องใช้ตอน npm run build (Prerendering)
-RUN apk add --no-cache openssl
+# ติดตั้ง openssl ใน stage builder ด้วย
+RUN apt-get update && apt-get install -y openssl
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# รับค่า DATABASE_URL มาจาก GitHub Actions Secrets
+# รับค่า DATABASE_URL สำหรับ Prerendering
 ARG DATABASE_URL
 ENV DATABASE_URL=$DATABASE_URL
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -26,7 +26,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # สร้าง Prisma Client
 RUN npx prisma generate
 
-# Build โปรเจกต์ (Next.js จะใช้ DATABASE_URL ตรงนี้ไปต่อ DB ตอน Prerender)
+# Build โปรเจกต์ (Next.js 20+ จะยอมให้รันแล้ว)
 RUN npm run build
 
 # --- Stage: Runner ---
@@ -36,8 +36,9 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+# ตั้งค่า User (Debian ใช้คำสั่งต่างจาก Alpine เล็กน้อย)
+RUN groupadd --system --gid 1001 nodejs
+RUN useradd --system --uid 1001 nextjs
 
 COPY --from=builder /app/public ./public
 RUN mkdir .next
