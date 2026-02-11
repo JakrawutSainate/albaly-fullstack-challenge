@@ -7,11 +7,11 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 # Install dependencies based on the preferred package manager
+# 🔥 ใส่ Dummy URL ไว้ตรงนี้เพื่อให้ Prisma post-install ไม่พัง
+ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
+
 COPY package.json package-lock.json* ./
-RUN \
-    if [ -f package-lock.json ]; then npm ci; \
-    else echo "Lockfile not found." && exit 1; \
-    fi
+RUN npm ci
 
 # Rebuild the source code only when needed
 FROM base AS builder
