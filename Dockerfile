@@ -22,6 +22,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
 
 # สร้าง Prisma Client และ Build โปรเจกต์ 
+RUN npx prisma db push
 RUN npx prisma generate
 RUN npm run build
 
