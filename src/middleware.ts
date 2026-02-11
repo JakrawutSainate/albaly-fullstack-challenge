@@ -1,37 +1,34 @@
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
 
-export function middleware(request: NextRequest) {
-    // Define protected paths
-    const protectedPaths = ['/overview', '/insights']
-    const isProtectedPath = protectedPaths.some(path => request.nextUrl.pathname.startsWith(path))
+import { NextRequest, NextResponse } from 'next/server'
+import { decrypt } from '@/lib/auth'
 
-    if (isProtectedPath) {
-        // Check for session cookie
-        // In a real app, you would verify the JWT token here
-        const sessionToken = request.cookies.get('auth_session')?.value
+const protectedRoutes = ['/overview', '/insights']
+const publicRoutes = ['/']
 
-        if (!sessionToken) {
-            const loginUrl = new URL('/login', request.url)
-            // Optional: Add redirect param to return after login
-            loginUrl.searchParams.set('from', request.nextUrl.pathname)
-            return NextResponse.redirect(loginUrl)
-        }
+export default async function middleware(req: NextRequest) {
+    // Check if the current route is protected or public
+    const path = req.nextUrl.pathname
+    const isProtectedRoute = protectedRoutes.includes(path) || path.startsWith('/overview') || path.startsWith('/insights')
+    const isPublicRoute = publicRoutes.includes(path)
+
+    // Decrypt the session from the cookie
+    const cookie = req.cookies.get('session')?.value
+    const session = cookie ? await decrypt(cookie).catch(() => null) : null
+
+    // Redirect to /overview if user is authenticated and trying to access public route (login)
+    if (isPublicRoute && session?.userId) {
+        return NextResponse.redirect(new URL('/overview', req.nextUrl))
+    }
+
+    // Redirect to / if user is not authenticated and trying to access protected route
+    if (isProtectedRoute && !session?.userId) {
+        return NextResponse.redirect(new URL('/', req.nextUrl))
     }
 
     return NextResponse.next()
 }
 
+// Routes Middleware should not run on
 export const config = {
-    matcher: [
-        /*
-         * Match all request paths except for the ones starting with:
-         * - api (API routes)
-         * - _next/static (static files)
-         * - _next/image (image optimization files)
-         * - favicon.ico (favicon file)
-         * - login (login page)
-         */
-        '/((?!api|_next/static|_next/image|favicon.ico|login).*)',
-    ],
+    matcher: ['/((?!api|_next/static|_next/image|.*\\.png$).*)'],
 }

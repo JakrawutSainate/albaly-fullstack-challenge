@@ -1,5 +1,5 @@
 generator client {
-  provider      = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -10,6 +10,18 @@ datasource db {
 enum Role {
   ADMIN
   VIEWER
+}
+
+enum Region {
+  NA
+  EU
+  APAC
+}
+
+enum InventoryStatus {
+  OK
+  LOW
+  OUT
 }
 
 model User {
@@ -26,7 +38,7 @@ model Customer {
   id        String   @id @default(cuid())
   name      String
   email     String   @unique
-  region    String
+  region    Region
   isActive  Boolean  @default(true)
   sales     Sale[]
   createdAt DateTime @default(now())
@@ -34,13 +46,15 @@ model Customer {
 }
 
 model Product {
-  id        String   @id @default(cuid())
-  name      String
-  price     Float
-  category  String
-  sales     Sale[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                 String              @id @default(cuid())
+  name               String
+  price              Float
+  category           String
+  description        String?
+  sales              Sale[]
+  inventorySnapshots InventorySnapshot[]
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
 }
 
 model Sale {
@@ -55,15 +69,17 @@ model Sale {
 }
 
 model InventorySnapshot {
-  id           String   @id @default(cuid())
+  id           String          @id @default(cuid())
   productId    String
+  product      Product         @relation(fields: [productId], references: [id])
   onHand       Int
-  status       String
-  snapshotDate DateTime @default(now())
+  status       InventoryStatus
+  snapshotDate DateTime        @default(now())
 }
 
 model ActivityLog {
   id        String   @id @default(cuid())
+  user      String   // User email or ID
   action    String
   details   String?
   createdAt DateTime @default(now())
@@ -76,4 +92,5 @@ model FunnelWeekly {
   views     Int
   cart      Int
   purchase  Int
+  createdAt DateTime @default(now())
 }

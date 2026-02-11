@@ -1,61 +1,57 @@
-import { AnalyticsService } from '@/services/analytics.service';
-import { KpiCard } from '@/components/dashboard/KpiCard';
-import { ActivityFeed } from '@/components/dashboard/ActivityFeed';
-import { MonthlyPerformanceChart } from '@/components/dashboard/MonthlyPerformanceChart';
-import { BarChart3, Users, Package } from 'lucide-react';
 
-// In a real Server Component value-add, we fetch directly
-async function getData() {
-    const analyticsService = new AnalyticsService();
+import { getKPIs, getRecentActivity, getMonthlyPerformance } from '@/services/dashboard'
+import KPICard from '@/components/dashboard/KpiCard'
+import ActivityFeed from '@/components/dashboard/ActivityFeed'
+import MonthlyPerformanceChart from '@/components/charts/MonthlyPerformanceChart'
+import { DollarSign, Users, Package } from 'lucide-react'
 
-    // Parallel fetch for optimal performance
-    const [kpi, monthlyPerformance, recentActivity] = await Promise.all([
-        analyticsService.getKpiData(),
-        analyticsService.getMonthlyPerformance(),
-        analyticsService.getRecentActivity()
-    ]);
-
-    return { kpi, monthlyPerformance, recentActivity };
-}
+export const dynamic = 'force-dynamic' // Ensure real-time data
 
 export default async function OverviewPage() {
-    const { kpi, monthlyPerformance, recentActivity } = await getData();
+    const kpis = await getKPIs()
+    const recentActivity = await getRecentActivity()
+    const monthlyPerformance = await getMonthlyPerformance()
+
+    // Simulate trend data (in a real app, compare with previous period)
+    const trends = {
+        sales: { value: 12, direction: 'up' as const },
+        customers: { value: 5, direction: 'up' as const },
+        inventory: { value: 2, direction: 'down' as const } // e.g. fewer alerts is good, or more stock is good? Let's assume neutral or just display
+    }
 
     return (
         <div className="space-y-6">
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                <KpiCard
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Overview</h2>
+
+            {/* KPI Cards */}
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                <KPICard
                     title="Total Sales"
-                    value={`$${kpi.totalSales.toLocaleString()}`}
-                    change={`+${kpi.totalSalesGrowth}%`}
-                    trend="up"
-                    icon={BarChart3}
+                    value={`$${kpis.totalSales.toLocaleString()}`}
+                    icon={DollarSign}
+                    trend={trends.sales}
                 />
-                <KpiCard
+                <KPICard
                     title="Active Customers"
-                    value={kpi.activeCustomers.toLocaleString()}
-                    change={`+${kpi.activeCustomersGrowth}%`}
-                    trend="up"
+                    value={kpis.activeCustomers}
                     icon={Users}
+                    trend={trends.customers}
                 />
-                <KpiCard
-                    title="Inventory Status"
-                    value={kpi.inventoryCount.toLocaleString()}
-                    change={`+${kpi.inventoryGrowth}%`}
-                    trend="up"
-                    variant="warning"
+                <KPICard
+                    title="Inventory Alerts"
+                    value={kpis.inventoryAlerts}
                     icon={Package}
+                    trend={{ value: 0, direction: 'neutral' }} // Placeholder
                 />
             </div>
 
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-                <div className="lg:col-span-2">
-                    <ActivityFeed activities={recentActivity} />
-                </div>
-                <div>
-                    <MonthlyPerformanceChart data={monthlyPerformance} />
-                </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Monthly Performance Chart */}
+                <MonthlyPerformanceChart data={monthlyPerformance} />
+
+                {/* Recent Activity Feed */}
+                <ActivityFeed activities={recentActivity} />
             </div>
         </div>
-    );
+    )
 }

@@ -1,44 +1,46 @@
-import { LucideIcon, ArrowUpRight, ArrowDownRight } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
-interface KpiCardProps {
-    title: string;
-    value: string;
-    change: string;
-    trend: 'up' | 'down';
-    icon: LucideIcon;
-    variant?: 'default' | 'warning';
+import { ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react'
+
+interface KPICardProps {
+    title: string
+    value: string | number
+    trend?: {
+        value: number
+        direction: 'up' | 'down' | 'neutral'
+    }
+    icon?: React.ElementType
 }
 
-export function KpiCard({ title, value, change, trend, icon: Icon, variant = 'default' }: KpiCardProps) {
-    const isPositive = trend === 'up';
-
+export default function KPICard({ title, value, trend, icon: Icon }: KPICardProps) {
     return (
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm hover:shadow-md transition-all">
-            <div className="flex items-center justify-between">
-                <div>
-                    <p className="text-sm font-medium text-slate-500">{title}</p>
-                    <div className="mt-2 flex items-baseline gap-2">
-                        <span className="text-2xl font-semibold text-slate-900">{value}</span>
-                        <span
-                            className={cn(
-                                "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
-                                variant === 'warning'
-                                    ? "bg-yellow-100 text-yellow-800"
-                                    : isPositive
-                                        ? "bg-emerald-100 text-emerald-800"
-                                        : "bg-red-100 text-red-800"
-                            )}
-                        >
-                            {isPositive ? <ArrowUpRight className="mr-1 h-3 w-3" /> : <ArrowDownRight className="mr-1 h-3 w-3" />}
-                            {change}
-                        </span>
+        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg p-5">
+            <div className="flex items-center">
+                {Icon && (
+                    <div className="flex-shrink-0">
+                        <Icon className="h-6 w-6 text-gray-400" aria-hidden="true" />
                     </div>
-                </div>
-                <div className={cn("rounded-lg p-2 ring-1 ring-inset", variant === 'warning' ? "bg-yellow-50 text-yellow-600 ring-yellow-500/10" : "bg-indigo-50 text-indigo-600 ring-indigo-500/10")}>
-                    <Icon className="h-6 w-6" />
+                )}
+                <div className={`w-0 flex-1 ${Icon ? 'ml-5' : ''}`}>
+                    <dl>
+                        <dt className="text-sm font-medium text-gray-500 truncate">{title}</dt>
+                        <dd>
+                            <div className="text-2xl font-semibold text-gray-900 dark:text-white">{value}</div>
+                        </dd>
+                    </dl>
                 </div>
             </div>
+            {trend && (
+                <div className={`mt-4 flex items-center text-sm ${trend.direction === 'up' ? 'text-green-600' :
+                        trend.direction === 'down' ? 'text-red-600' : 'text-gray-500'
+                    }`}>
+                    {trend.direction === 'up' ? <ArrowUpRight className="h-4 w-4 mr-1" /> :
+                        trend.direction === 'down' ? <ArrowDownRight className="h-4 w-4 mr-1" /> :
+                            <Minus className="h-4 w-4 mr-1" />
+                    }
+                    <span className="font-medium">{Math.abs(trend.value)}%</span>
+                    <span className="ml-2 text-gray-400">vs last month</span>
+                </div>
+            )}
         </div>
-    );
+    )
 }
