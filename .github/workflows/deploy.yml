@@ -39,7 +39,8 @@ jobs:
         with:
           context: .
           push: true
-          # 2. เรียกใช้ค่าผ่าน steps.meta.outputs... แทน
+          build-args: |
+            DATABASE_URL=${{ secrets.DATABASE_URL }}
           tags: |
             ghcr.io/${{ steps.meta.outputs.repo_lower }}:latest
             ghcr.io/${{ steps.meta.outputs.repo_lower }}:${{ github.sha }}
