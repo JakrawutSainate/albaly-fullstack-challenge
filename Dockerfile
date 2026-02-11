@@ -1,62 +1,55 @@
+# 1. ใช้ Node 20 เพื่อรองรับ Next.js 16 และ Prisma 7 
 FROM node:20-alpine AS base
 
-# Install dependencies only when needed
+# --- Stage: Dependencies ---
 FROM base AS deps
-# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
-
-# Install dependencies based on the preferred package manager
-# 🔥 ใส่ Dummy URL ไว้ตรงนี้เพื่อให้ Prisma post-install ไม่พัง
-ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
 
 COPY package.json package-lock.json* ./
 RUN npm ci
 
-# Rebuild the source code only when needed
+# --- Stage: Builder ---
 FROM base AS builder
 WORKDIR /app
+# คัดลอก node_modules จาก deps stage 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Next.js collects completely anonymous telemetry data about general usage.
-# Learn more here: https://nextjs.org/telemetry
-# Uncomment the following line in case you want to disable telemetry during the build.
-# ENV NEXT_TELEMETRY_DISABLED 1
+# 🔥 จุดสำคัญ: ต้องวาง ENV ไว้ใน stage builder เพื่อให้ npx prisma generate มองเห็น
+# แก้ไขเป็นรูปแบบ key=value เพื่อลบ Warning [cite: 100]
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
 
-# Generate Prisma Client
+# สร้าง Prisma Client และ Build โปรเจกต์ 
 RUN npx prisma generate
-
 RUN npm run build
 
-# Production image, copy all the files and run next
+# --- Stage: Runner (Final Image) ---
 FROM base AS runner
 WORKDIR /app
 
-ENV NODE_ENV production
-# Uncomment the following line in case you want to disable telemetry during runtime.
-# ENV NEXT_TELEMETRY_DISABLED 1
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 
+# ตั้งค่า User เพื่อความปลอดภัย (Security Best Practice) [cite: 92]
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/public ./public
 
-# Set the correct permission for prerender cache
+# ตั้งค่า Permission สำหรับ Cache
 RUN mkdir .next
 RUN chown nextjs:nodejs .next
 
-# Automatically leverage output traces to reduce image size
-# https://nextjs.org/docs/advanced-features/output-file-tracing
+# คัดลอกเฉพาะไฟล์ที่จำเป็น (Standalone mode) เพื่อลดขนาด Image 
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
 
 EXPOSE 3000
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
 
-ENV PORT 3000
-
-# server.js is created by next build from the standalone output
-# https://nextjs.org/docs/pages/api-reference/next-config-js/output
 CMD ["node", "server.js"]
