@@ -1,20 +1,24 @@
-FROM node:20-slim AS base
-# ติดตั้ง lib พื้นฐานที่ Prisma ต้องใช้
-RUN apt-get update && apt-get install -y openssl libssl-dev && rm -rf /var/lib/apt/lists/*
+# ใช้ Bullseye-slim เพราะมี Library ครบกว่าสำหรับ Prisma
+FROM node:20-bullseye-slim AS base
 
 # --- Stage: Dependencies ---
 FROM base AS deps
+# ติดตั้ง openssl 1.1 ที่ Prisma 5 ต้องการ
+RUN apt-get update && apt-get install -y openssl libssl1.1 && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
+
 COPY package.json package-lock.json* ./
 RUN npm ci
 
 # --- Stage: Builder ---
 FROM base AS builder
+# ติดตั้ง openssl ในขั้นตอนนี้ด้วย
+RUN apt-get update && apt-get install -y openssl libssl1.1 && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# 💡 ใช้ URL หลอกตรงนี้เลย ไม่ต้องใช้ ARG ก็ได้ถ้าอยาก Build อย่างเดียว
+# ใช้ค่า Dummy สำหรับ Build
 ENV DATABASE_URL="postgresql://postgres:password@localhost:5432/db"
 ENV NEXT_TELEMETRY_DISABLED=1
 
@@ -27,7 +31,6 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# สร้าง User สำหรับรัน (Debian style)
 RUN groupadd --system --gid 1001 nodejs
 RUN useradd --system --uid 1001 nextjs
 
