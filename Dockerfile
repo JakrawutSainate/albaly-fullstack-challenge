@@ -1,9 +1,10 @@
-# 1. ใช้ Node 20 เพื่อรองรับ Next.js 16 และ Prisma 7 
-FROM node:20-alpine AS base
+# 1. เปลี่ยนเป็น Node 18
+FROM node:18-alpine AS base
 
 # --- Stage: Dependencies ---
 FROM base AS deps
-RUN apk add --no-cache libc6-compat
+# ต้องมี openssl และ libc6-compat สำหรับ Prisma บน Alpine
+RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 
 COPY package.json package-lock.json* ./
@@ -11,40 +12,37 @@ RUN npm ci
 
 # --- Stage: Builder ---
 FROM base AS builder
+# ติดตั้ง openssl ในขั้นตอนนี้ด้วย เพราะต้องใช้ตอน npm run build (Prerendering)
+RUN apk add --no-cache openssl
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# เพิ่ม ARG เพื่อรับค่าจากภายนอก
+# รับค่า DATABASE_URL มาจาก GitHub Actions Secrets
 ARG DATABASE_URL
-# ส่งค่า ARG เข้าไปเป็น ENV เพื่อให้ Prisma และ Next.js มองเห็นตอนรันโค้ดช่วง Build
 ENV DATABASE_URL=$DATABASE_URL
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # สร้าง Prisma Client
 RUN npx prisma generate
 
-# Build โปรเจกต์ 
+# Build โปรเจกต์ (Next.js จะใช้ DATABASE_URL ตรงนี้ไปต่อ DB ตอน Prerender)
 RUN npm run build
 
-# --- Stage: Runner (Final Image) ---
+# --- Stage: Runner ---
 FROM base AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# ตั้งค่า User เพื่อความปลอดภัย (Security Best Practice) [cite: 92]
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/public ./public
-
-# ตั้งค่า Permission สำหรับ Cache
 RUN mkdir .next
 RUN chown nextjs:nodejs .next
 
-# คัดลอกเฉพาะไฟล์ที่จำเป็น (Standalone mode) เพื่อลดขนาด Image 
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
