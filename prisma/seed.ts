@@ -15,12 +15,7 @@ async function main() {
         create: {
             email: 'admin@albaly.com',
             name: 'Admin User',
-            password: hashedPassword, // Note: Schema might need password field if we use real auth, but user request didn't strictly ask for it in schema, but implied in seed. Adding it now would require schema change. I will assume simpler auth for now or just mock it. Wait, the user asked for hashed passwords in seed, so I should probably add password field to schema or just use a placeholder if schema is fixed. 
-            // ACTUALLY: The user's schema didn't have password. I will add it to the schema in a separate step or just assume for now we seed it but maybe it's not in the model I defined earlier. 
-            // LET'S CHECK: I defined User with id, email, name, role. NO PASSWORD. 
-            // I will add password to the schema in the next step to be safe, but for now let's write the seed as if it exists or use a field I can map to? 
-            // Re-reading: "2 Users (Admin & Viewer) with hashed passwords". 
-            // I MUST UPDATE THE SCHEMA. I will write this seed assuming 'password' field exists.
+            passwordHash: hashedPassword,
             role: Role.ADMIN,
         },
     })
@@ -31,7 +26,7 @@ async function main() {
         create: {
             email: 'viewer@albaly.com',
             name: 'Viewer User',
-            password: hashedPassword,
+            passwordHash: hashedPassword,
             role: Role.VIEWER,
         },
     })
@@ -46,31 +41,40 @@ async function main() {
 
     // 3. Customers & Sales (Past 3 Months)
     const customers = []
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 30; i++) {
+        const regions = ['NA', 'EU', 'APAC']
+        const randomRegion = regions[Math.floor(Math.random() * regions.length)]
+        const isActive = Math.random() > 0.1 // 90% active
+
         const customer = await prisma.customer.create({
             data: {
                 name: `Customer ${i + 1}`,
                 email: `customer${i + 1}@example.com`,
+                region: randomRegion,
+                isActive: isActive,
             },
         })
         customers.push(customer)
     }
 
-    // Generate 50+ sales
+    // Generate 150+ sales
     const salesData = []
     const now = new Date()
-    const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate())
+    const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate())
 
-    for (let i = 0; i < 60; i++) {
+    for (let i = 0; i < 200; i++) {
         const randomProduct = products[Math.floor(Math.random() * products.length)]
         const randomCustomer = customers[Math.floor(Math.random() * customers.length)]
 
-        // Random date between 3 months ago and now
-        const randomTime = threeMonthsAgo.getTime() + Math.random() * (now.getTime() - threeMonthsAgo.getTime())
+        // Random date between 6 months ago and now
+        const randomTime = sixMonthsAgo.getTime() + Math.random() * (now.getTime() - sixMonthsAgo.getTime())
         const saleDate = new Date(randomTime)
 
+        const quantity = Math.floor(Math.random() * 5) + 1
+
         salesData.push({
-            amount: randomProduct.price,
+            amount: randomProduct.price * quantity,
+            quantity: quantity,
             customerId: randomCustomer.id,
             productId: randomProduct.id,
             createdAt: saleDate
@@ -85,9 +89,15 @@ async function main() {
     for (let i = 0; i < 30; i++) {
         const date = new Date(now.getTime() - (i * 24 * 60 * 60 * 1000))
         for (const product of products) {
+            const onHand = Math.floor(Math.random() * 100)
+            let status = 'OK'
+            if (onHand === 0) status = 'OUT'
+            else if (onHand < 20) status = 'LOW'
+
             inventorySnapshots.push({
                 productId: product.id,
-                quantity: Math.floor(Math.random() * 100) + 10, // Random quantity
+                onHand: onHand,
+                status: status,
                 snapshotDate: date
             })
         }

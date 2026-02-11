@@ -3,6 +3,8 @@ import { AnalyticsService } from '@/services/analytics.service';
 import { ProductService } from '@/services/product.service';
 import { ApiResponse } from '@/lib/api-response';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
     try {
         const analyticsService = new AnalyticsService();
