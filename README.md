@@ -90,6 +90,7 @@ The seed script creates two users for testing:
 | **Admin** | `admin@albaly.com` | `password123` |
 | **Viewer** | `viewer@albaly.com` | `password123` |
 
+
 ## 🏗️ Architecture Note
 
 This project follows **Clean Architecture** principles inside Next.js:
