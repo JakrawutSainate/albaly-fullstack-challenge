@@ -1,36 +1,99 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Albaly Insights
 
-## Getting Started
+Production-ready dashboard application built with **Next.js 14**, **TypeScript**, **Tailwind CSS**, and **PostgreSQL (Docker)**. Designed with a strict Clean Architecture approach separating UI from Business Logic.
 
-First, run the development server:
+## ✨ Features Implemented
 
+### 1. Infrastructure & Backend
+- **Dockerized PostgreSQL**: `docker-compose.yml` for easy database setup.
+- **Clean Architecture**: Strict separation of concerns (Layered: UI -> Page (Controller) -> Service -> Repository/Prisma).
+- **Real Data Seeding**: `prisma/seed.ts` generates realistic data for:
+    - **Users**: Admin & Viewer roles with hashed passwords.
+    - **Sales**: 50+ transactions over the last 3 months.
+    - **Funnel**: 4 weeks of conversion data (Access -> Cart -> Purchase).
+    - **Inventory & Activity Logs**: Snapshots and user action logs.
+- **Middleware Protection**: Protected `/overview` and `/insights` routes via `src/middleware.ts`.
+- **Standardized API**: `ApiResponse` wrapper for consistent success/error JSON responses.
+
+### 2. UI & UX (Clean Enterprise)
+- **Dashboard Layout**: Responsive Sidebar and TopNav with breadcrumbs.
+- **Overview Page**:
+    - **KPI Cards**: Real-time sales, customers, and inventory stats with trend indicators.
+    - **Activity Feed**: Live list of recent system actions fetched from DB.
+    - **Monthly Performance**: Bar chart visualization of sales data.
+- **Insights Page**:
+    - **Conversion Funnel**: Step-by-step funnel visualization.
+    - **Regional Performance**: Progress bars for regional sales.
+    - **Top Products**: Comparison of best-selling items.
+- **Modern Styling**: Tailwind CSS with a refined Slate/Indigo palette and specialized components (Glassmorphism touches).
+
+---
+
+## 🚀 Command Cheat Sheet
+
+| Action | Command | Description |
+| :--- | :--- | :--- |
+| **Start DB** | `docker-compose up -d` | Spins up PostgreSQL container in background |
+| **Stop DB** | `docker-compose down` | Stops and removes containers |
+| **Install** | `npm install` | Installs Node dependencies |
+| **Push Schema** | `npx prisma db push` | Syncs schema with database (non-destructive if possible) |
+| **Seed Data** | `npx prisma db seed` | Populates DB with users, sales, and logs |
+| **Run Dev** | `npm run dev` | Starts Next.js dev server on port 3000 |
+| **Lint** | `npm run lint` | Runs ESLint check |
+
+---
+
+## 🛠️ Prerequisites
+
+- **Node.js** (v18+)
+- **Docker** & **Docker Compose**
+
+## 🏁 Getting Started
+
+### 1. Start Database
+Spin up the PostgreSQL container:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+docker-compose up -d
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Environment Setup
+Rename `.env.example` to `.env` (or create one) and ensure the `DATABASE_URL` matches the Docker config:
+```env
+# Default credentials from docker-compose.yml
+DATABASE_URL="postgresql://albaly_user:albaly_password@localhost:5432/albaly_insights?schema=public"
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. Install Dependencies
+```bash
+npm install
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 4. Setup Database & Seed Data
+Push the schema to the database and run the seed script to generate **User**, **Sales**, **Funnel**, and **Activity** data.
+```bash
+npx prisma db push
+npx prisma db seed
+```
 
-## Learn More
+### 5. Run Development Server
+```bash
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000) to view the application.
 
-To learn more about Next.js, take a look at the following resources:
+## 🔐 Credentials
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The seed script creates two users for testing:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Role | Email | Password |
+|---|---|---|
+| **Admin** | `admin@albaly.com` | `password123` |
+| **Viewer** | `viewer@albaly.com` | `password123` |
 
-## Deploy on Vercel
+## 🏗️ Architecture Note
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project follows **Clean Architecture** principles inside Next.js:
+- **Server Components** (`page.tsx`) act as Controllers, fetching data via **Services**.
+- **Services** (`src/services/*`) handle all DB interactions and business logic.
+- **Components** (`src/components/*`) are purely presentational and receive data via props.
+- **API Routes** (`src/app/api/*`) use a standardized `ApiResponse` wrapper for consistent error handling.
