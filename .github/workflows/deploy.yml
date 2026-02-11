@@ -37,7 +37,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ./albaly-insights
           push: true
           # 2. เรียกใช้ค่าผ่าน steps.meta.outputs... แทน
           tags: |
