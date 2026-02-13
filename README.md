@@ -34,6 +34,23 @@ Production-ready dashboard application built with **Next.js 16**, **React 19**, 
     - **Top Products**: Comparison of best-selling items.
 - **Modern Styling**: Tailwind CSS with a refined Slate/Indigo palette and specialized components (Glassmorphism touches).
 
+### 3. Shopping Cart & E-commerce
+- **Product Store**: Browse products with real-time stock tracking.
+- **Shopping Cart System**:
+    - Add products to cart with quantity management.
+    - Beautiful cart modal with gradient design and hover effects.
+    - Live cart count badge in navigation.
+    - Batch purchase functionality.
+- **Product Management** (Admin only):
+    - Edit product details (name, price, stock, category).
+    - Real-time inventory updates.
+- **Toast Notifications**: User feedback for cart actions and purchases.
+
+### 4. Role-Based Access Control
+- **Admin Role**: Full access to dashboard, insights, and product management.
+- **Viewer Role**: Access to product store and shopping features only.
+- **Route Protection**: Middleware-enforced role separation.
+
 ---
 
 ## 📂 Project Structure
@@ -42,13 +59,19 @@ Production-ready dashboard application built with **Next.js 16**, **React 19**, 
 src/
 ├── app/                    # Next.js App Router
 │   ├── (auth)/             # Auth routes (Login)
-│   ├── (dashboard)/        # Protected dashboard routes
+│   ├── (dashboard)/        # Protected dashboard routes (Admin only)
+│   ├── (shop)/             # Store routes (All users)
 │   └── api/                # API Routes (Controllers)
 ├── components/             # Reusable UI components
 │   ├── overview/           # Dashboard-specific widgets
-│   └── insights/           # Analytics charts
+│   ├── insights/           # Analytics charts
+│   ├── store/              # Product cards and store UI
+│   ├── products/           # Product management components
+│   └── ui/                 # Shared UI components (Toast, etc.)
+├── contexts/               # React Context providers (Cart, Toast)
 ├── services/               # Business Logic & DB calls
-├── lib/                    # Utilities (Auth, Formaters)
+├── lib/                    # Utilities (Auth, Formatters, Cart Modal)
+├── types/                  # Centralized TypeScript interfaces
 └── middleware.ts           # Route protection logic
 prisma/
 ├── schema.prisma           # Database Schema
@@ -64,6 +87,7 @@ prisma/
 | **Start DB** | `docker-compose up -d` | Spins up PostgreSQL container in background |
 | **Stop DB** | `docker-compose down` | Stops and removes containers |
 | **Install** | `npm install` | Installs Node dependencies |
+| **Generate Client** | `npx prisma generate` | Generates Prisma Client after schema changes |
 | **Push Schema** | `npx prisma db push` | Syncs schema with database (non-destructive if possible) |
 | **Seed Data** | `npx prisma db seed` | Populates DB with users, sales, and logs |
 | **Run Dev** | `npm run dev` | Starts Next.js dev server on port 3000 |
@@ -118,10 +142,10 @@ Open [http://localhost:3000](http://localhost:3000) to view the application.
 
 The seed script creates two users for testing:
 
-| Role | Email | Password |
-|---|---|---|
-| **Admin** | `admin@albaly.com` | `password123` |
-| **Viewer** | `viewer@albaly.com` | `password123` |
+| Role | Email | Password | Access |
+|---|---|---|---|
+| **Admin** | `admin@albaly.com` | `password123` | Dashboard, Insights, Store, Product Management |
+| **Viewer** | `viewer@albaly.com` | `password123` | Store only (Shopping Cart) |
 
 ---
 
