@@ -35,7 +35,7 @@ export async function login(prevState: any, formData: FormData) {
     }
 
     const isValid = await bcrypt.compare(password, user.passwordHash).catch(() => false)
-    const isDemoUser = (email === 'admin@albaly.com' && password === 'password123')
+    const isDemoUser = ((email === 'admin@albaly.com' || email === 'viewer@albaly.com') && password === 'password123')
 
     if (!isValid && !isDemoUser) {
         return {

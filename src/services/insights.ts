@@ -26,28 +26,31 @@ export const insightsService = {
     },
 
     async getRegionalPerformance() {
-        // We need sales joined with customer region.
-        // Prisma groupBy doesn't support joining relations directly.
-        // Use findMany and aggregate in JS.
-        const sales = await prisma.sale.findMany({
-            include: { customer: true },
+        // We need customer count by region
+        const regionGroups = await prisma.customer.groupBy({
+            by: ['region'],
+            _count: { region: true }
         })
 
-        const regionStats: Record<string, number> = {}
-
-        sales.forEach(sale => {
-            const region = sale.customer.region
-            regionStats[region] = (regionStats[region] || 0) + sale.amount
-        })
-
-        return Object.entries(regionStats).map(([region, sales]) => ({ region, sales }))
+        // Map it to the format expected by the chart
+        return regionGroups.map(group => ({
+            region: group.region,
+            sales: group._count.region // Reuse "sales" key for count as per original mock interface or update chart
+            // Note: The original requirement said "sales", but typically regional performance might be sales volume.
+            // If we strictly need Sales Volume by Region:
+            // Prisma doesn't do JOINs in groupBy. We'd need to fetch sales and aggregate in JS or use raw query.
+            // Following the user's specific instruction "Use prisma.customer.groupBy... _count: { _all: true }"
+        }))
     },
 
     async getFunnelData() {
         // Get the latest weekly funnel
-        return await prisma.funnelWeekly.findFirst({
-            orderBy: { weekStart: 'desc' }
+        const funnel = await prisma.funnelWeekly.findMany({
+            orderBy: { weekStart: 'desc' },
+            take: 1
         })
+
+        return funnel[0] || null
     },
 
     async getDropOffData() {
@@ -66,3 +69,4 @@ export const insightsService = {
         ]
     }
 }
+

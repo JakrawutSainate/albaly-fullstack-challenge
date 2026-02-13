@@ -5,13 +5,16 @@ interface KPIProps {
     title: string
     value: string | number
     trend?: number
+    change?: number // Alias for trend
     trendLabel?: string
     icon?: React.ElementType
+    inverseTrend?: boolean
 }
 
-export function KPICard({ title, value, trend, trendLabel, icon: Icon }: KPIProps) {
-    const isPositive = trend && trend > 0
-    const isNeutral = trend === 0
+export function KPICard({ title, value, trend, change, trendLabel, icon: Icon, inverseTrend }: KPIProps) {
+    const changeValue = change !== undefined ? change : trend
+    const isPositive = changeValue && changeValue > 0
+    const isNeutral = changeValue === 0
 
     return (
         <div className="bg-white overflow-hidden shadow rounded-lg p-5">

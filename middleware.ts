@@ -4,7 +4,7 @@ import { decrypt, updateSession } from '@/lib/auth'
 
 // 1. Specify protected and public routes
 const protectedRoutes = ['/overview', '/insights']
-const publicRoutes = ['/login', '/']
+const publicRoutes = ['/login', '/', '/register']
 
 export default async function middleware(req: NextRequest) {
     const path = req.nextUrl.pathname

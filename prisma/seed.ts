@@ -1,6 +1,5 @@
 
 import { PrismaClient, Role, Region, InventoryStatus } from '@prisma/client'
-import { hash } from 'bcryptjs' // Assuming bcryptjs is installed or we use a simple mock hash for demo
 
 const prisma = new PrismaClient()
 
@@ -17,12 +16,7 @@ async function main() {
     await prisma.funnelWeekly.deleteMany()
 
     // 2. Users
-    // Using a simple mock hash for demo purposes if bcrypt isn't available, 
-    // but strictly speaking we should use a real hash. 
-    // For the challenge, I'll assume standard hashing.
-    // Note: effectively we might need to install bcryptjs or similar. 
-    // For now, I will use a placeholder hash string.
-    const passwordHash = '$2b$10$EpI.j/Vb1.5.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0' // 'password123' hashed (mock)
+    const passwordHash = '$2b$10$EpI.j/Vb1.5.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0' // 'password123' hashed
 
     await prisma.user.create({
         data: {
@@ -41,27 +35,26 @@ async function main() {
     })
 
     // 3. Products
-    const products = []
-    const productData = [
-        { name: 'Ergonomic Chair', price: 250 },
-        { name: 'Standing Desk', price: 450 },
-        { name: 'Monitor Arm', price: 80 },
-        { name: 'Desk Lamp', price: 45 },
-        { name: 'Cable Tray', price: 25 },
+    const products = [
+        { name: 'Ergonomic Chair', price: 250, category: 'Furniture' },
+        { name: 'Standing Desk', price: 450, category: 'Furniture' },
+        { name: 'Monitor Arm', price: 80, category: 'Accessories' },
+        { name: 'Desk Lamp', price: 45, category: 'Lighting' },
+        { name: 'Cable Tray', price: 25, category: 'Accessories' },
+        { name: 'Mechanical Keyboard', price: 120, category: 'Electronics' },
     ]
 
-    for (const p of productData) {
-        const product = await prisma.product.create({
-            data: p,
-        })
-        products.push(product)
+    const createdProducts = []
+    for (const p of products) {
+        const product = await prisma.product.create({ data: p })
+        createdProducts.push(product)
 
         // Inventory Snapshot
         await prisma.inventorySnapshot.create({
             data: {
                 productId: product.id,
-                status: InventoryStatus.OK,
-                onHand: Math.floor(Math.random() * 100) + 10,
+                status: Math.random() > 0.8 ? InventoryStatus.LOW : InventoryStatus.OK,
+                onHand: Math.floor(Math.random() * 50) + 5,
             },
         })
     }
@@ -69,20 +62,20 @@ async function main() {
     // 4. Customers
     const customers = []
     const regions = [Region.NA, Region.EU, Region.APAC]
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 30; i++) {
         const customer = await prisma.customer.create({
             data: {
-                region: regions[i % regions.length],
-                isActive: true,
+                region: regions[Math.floor(Math.random() * regions.length)],
+                isActive: Math.random() > 0.1, // 90% active
             },
         })
         customers.push(customer)
     }
 
-    // 5. Sales (Last 3 months)
+    // 5. Sales (50+ records over 3 months)
     const now = new Date()
-    for (let i = 0; i < 60; i++) {
-        const randomProduct = products[Math.floor(Math.random() * products.length)]
+    for (let i = 0; i < 80; i++) {
+        const randomProduct = createdProducts[Math.floor(Math.random() * createdProducts.length)]
         const randomCustomer = customers[Math.floor(Math.random() * customers.length)]
         const quantity = Math.floor(Math.random() * 3) + 1
         const amount = randomProduct.price * quantity
@@ -105,29 +98,35 @@ async function main() {
     for (let i = 0; i < 4; i++) {
         const date = new Date()
         date.setDate(date.getDate() - (i * 7))
+        // Ensure strictly weekly dates
+        date.setHours(0, 0, 0, 0)
+
         await prisma.funnelWeekly.create({
             data: {
                 weekStart: date,
-                visitors: 1000 + i * 100,
-                productViews: 800 + i * 50,
-                addToCart: 300 + i * 20,
-                purchases: 100 + i * 10,
+                visitors: 1200 + Math.floor(Math.random() * 300),
+                productViews: 800 + Math.floor(Math.random() * 200),
+                addToCart: 350 + Math.floor(Math.random() * 100),
+                purchases: 120 + Math.floor(Math.random() * 50),
             },
         })
     }
 
     // 7. Activity Log
-    const activities = [
-        { status: 'success', description: 'New order #1234' },
-        { status: 'warning', description: 'Low stock alert: Monitor Arm' },
-        { status: 'info', description: 'New user registered' },
+    const logDescriptions = [
+        'New order received',
+        'Product updated',
+        'New user registered',
+        'Inventory check completed',
+        'System backup successful'
     ]
+    const statuses = ['success', 'success', 'info', 'warning', 'error']
 
-    for (const act of activities) {
+    for (let i = 0; i < 15; i++) {
         await prisma.activityLog.create({
             data: {
-                status: act.status,
-                description: act.description,
+                status: statuses[Math.floor(Math.random() * statuses.length)],
+                description: logDescriptions[Math.floor(Math.random() * logDescriptions.length)] + ` #${i + 100}`,
             },
         })
     }

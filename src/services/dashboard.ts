@@ -5,23 +5,23 @@ const prisma = new PrismaClient()
 
 export const dashboardService = {
     async getKPIMetrics() {
-        // 1. Total Sales (This Month vs Last Month)
         const now = new Date()
-        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-        const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-        const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0)
+        const firstDayWhy = new Date(now.getFullYear(), now.getMonth(), 1)
+        const firstDayLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+        const lastDayLastMonth = new Date(now.getFullYear(), now.getMonth(), 0)
 
+        // 1. Total Sales
         const currentMonthSales = await prisma.sale.aggregate({
             _sum: { amount: true },
-            where: { createdAt: { gte: startOfMonth } },
+            where: { createdAt: { gte: firstDayWhy } },
         })
 
         const lastMonthSales = await prisma.sale.aggregate({
             _sum: { amount: true },
             where: {
                 createdAt: {
-                    gte: startOfLastMonth,
-                    lte: endOfLastMonth,
+                    gte: firstDayLastMonth,
+                    lte: lastDayLastMonth,
                 },
             },
         })
@@ -34,19 +34,34 @@ export const dashboardService = {
         const activeCustomers = await prisma.customer.count({
             where: { isActive: true },
         })
-        // For demo, we just compare to total customers or a fixed number to show a "trend"
-        // Ideally we'd have historical customer data, but for now we'll just return the count and a mock trend
-        const activeCustomersGrowth = 5.2 // Mock 5.2% growth
+        // Compare with total customers for a simple "engagement rate" or just use a placeholder trend if no historical data
+        const totalCustomers = await prisma.customer.count()
+        const customerTrend = totalCustomers === 0 ? 0 : ((activeCustomers / totalCustomers) * 100)
 
         // 3. Inventory Status
         const lowStockCount = await prisma.inventorySnapshot.count({
-            where: { status: { in: ['LOW', 'OUT'] } },
+            where: { status: 'LOW' }
         })
+        const outOfStockCount = await prisma.inventorySnapshot.count({
+            where: { status: 'OUT' }
+        })
+        const totalAlerts = lowStockCount + outOfStockCount
 
         return {
-            totalSales: { value: currentSales, change: salesGrowth },
-            activeCustomers: { value: activeCustomers, change: activeCustomersGrowth },
-            inventoryAlerts: { value: lowStockCount, status: lowStockCount > 5 ? 'Critical' : 'Stable' }
+            totalSales: {
+                value: currentSales,
+                change: Number(salesGrowth.toFixed(1)),
+                trendLabel: 'vs last month'
+            },
+            activeCustomers: {
+                value: activeCustomers,
+                change: Number(customerTrend.toFixed(1)), // Using active % as a proxy for trend for now
+                trendLabel: '% of total base'
+            },
+            inventoryAlerts: {
+                value: totalAlerts,
+                status: totalAlerts > 5 ? 'Critical' : 'Stable'
+            }
         }
     },
 
@@ -58,26 +73,41 @@ export const dashboardService = {
     },
 
     async getMonthlyPerformance() {
-        // Return last 6 months of sales
-        // Since Prisma groupBy on dates is tricky without raw query or logic, 
-        // we'll fetch sales and aggregate in JS for simplicity or use raw query if needed.
-        // Given the scale, fetching last 6 months sales and reducing is fine.
-
         const sixMonthsAgo = new Date()
         sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
 
         const sales = await prisma.sale.findMany({
             where: { createdAt: { gte: sixMonthsAgo } },
             select: { createdAt: true, amount: true },
+            orderBy: { createdAt: 'asc' }
         })
 
         const monthlyData: Record<string, number> = {}
 
+        // Initialize last 6 months to ensure 0s if no sales
+        for (let i = 0; i < 6; i++) {
+            const d = new Date()
+            d.setMonth(d.getMonth() - i)
+            const monthName = d.toLocaleString('default', { month: 'short' })
+            monthlyData[monthName] = 0
+        }
+
         sales.forEach(sale => {
             const month = sale.createdAt.toLocaleString('default', { month: 'short' })
-            monthlyData[month] = (monthlyData[month] || 0) + sale.amount
+            // Only add if it's within our window (handled by query, but good for safety)
+            if (monthlyData[month] !== undefined) {
+                monthlyData[month] += sale.amount
+            } else {
+                // Fallback if month order differs
+                monthlyData[month] = (monthlyData[month] || 0) + sale.amount
+            }
         })
 
-        return Object.entries(monthlyData).map(([month, revenue]) => ({ month, revenue }))
+        // Sort by month logic or return as is (Recharts handles categories usually)
+        // For simplicity, let's just return the entries we built
+        return Object.entries(monthlyData)
+            .map(([month, revenue]) => ({ month, revenue }))
+            .reverse() // Basic reverse to order roughly chronologically if created strictly backwards
     }
 }
+

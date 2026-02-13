@@ -46,6 +46,7 @@ model Product {
   id                 String              @id @default(cuid())
   name               String
   price              Float
+  category           String              @default("Office") // Added category as per prompt
   sales              Sale[]
   inventorySnapshots InventorySnapshot[]
   createdAt          DateTime            @default(now())
@@ -76,7 +77,7 @@ model InventorySnapshot {
 
 model ActivityLog {
   id          String   @id @default(cuid())
-  status      String
+  status      String   // success, warning, error
   description String
   createdAt   DateTime @default(now())
 }

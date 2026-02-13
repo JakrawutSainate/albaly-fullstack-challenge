@@ -1,26 +1,32 @@
-import { UserDTO } from "@/types/api-response";
+import { hash } from 'bcryptjs'
+import prisma from '@/lib/prisma'
+import { User } from '@prisma/client'
 
-export class AuthService {
-    async login(email: string): Promise<UserDTO> {
-        // Mock login - in reality would verify password hash
-        if (email === "admin@albaly.com") {
-            return {
-                id: "admin-1",
-                name: "Admin User",
+export const authService = {
+    async registerUser(email: string, password: string): Promise<User> {
+        // Check if user already exists
+        const existingUser = await prisma.user.findUnique({
+            where: { email },
+        })
+
+        if (existingUser) {
+            throw new Error('User already exists')
+        }
+
+        // Hash password
+        const passwordHash = await hash(password, 10)
+
+        // Create user with default role 'VIEWER'
+        const user = await prisma.user.create({
+            data: {
                 email,
-                role: "ADMIN"
-            }
-        }
-        return {
-            id: "user-1",
-            name: "Demo Viewer",
-            email,
-            role: "VIEWER"
-        }
-    }
+                passwordHash,
+                role: 'VIEWER',
+            },
+        })
 
-    async logout() {
-        // Clear session cookies etc.
-        return true;
+        return user
+
     }
 }
+
