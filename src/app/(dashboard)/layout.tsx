@@ -15,11 +15,11 @@ export default async function DashboardLayout({
     return (
         <div className="flex h-screen bg-gray-100">
             <Sidebar userEmail={session.email} userRole={session.user?.role || 'VIEWER'} />
-            <div className="flex-1 flex flex-col overflow-hidden">
-                <header className="bg-white shadow">
-                    {/* ลบ max-w-7xl mx-auto ออก และปรับ px ให้เป็น 6 เพื่อให้ขอบตรงกับ main */}
-                    <div className="w-full py-4 px-6 flex justify-between items-center">
-                        <h1 className="text-2xl font-bold leading-tight text-gray-900">
+            <div className="flex-1 flex flex-col overflow-hidden w-full">
+                <header className="bg-white shadow relative z-10">
+                    {/* เพิ่ม pl-16 บนมือถือเพื่อหลบปุ่ม Hamburger, จอ md ขึ้นไปใช้ px-6 ปกติ */}
+                    <div className="w-full py-4 pl-16 pr-4 md:px-6 flex justify-between items-center min-h-[64px]">
+                        <h1 className="text-xl md:text-2xl font-bold leading-tight text-gray-900 truncate">
                             Dashboard
                         </h1>
                         <div className="flex items-center gap-3">
@@ -32,7 +32,7 @@ export default async function DashboardLayout({
                         </div>
                     </div>
                 </header>
-                <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
+                <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-4 md:p-6 lg:p-8">
                     {children}
                 </main>
             </div>

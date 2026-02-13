@@ -6,7 +6,6 @@ import { Package, Edit, Trash2 } from 'lucide-react'
 import { EditProductButton } from '@/components/products/EditProductButton'
 import { DeleteProductButton } from '@/components/products/DeleteProductButton'
 
-
 async function ProductsTable() {
     const products = await prisma.product.findMany({
         include: {
@@ -29,54 +28,62 @@ async function ProductsTable() {
     }))
 
     return (
-        <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                    <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sold</th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                    </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                    {productsWithStats.map(product => (
-                        <tr key={product.id} className="hover:bg-gray-50">
-                            <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="flex items-center">
-                                    <Package className="w-5 h-5 text-gray-400 mr-3" />
-                                    <div className="text-sm font-medium text-gray-900">{product.name}</div>
-                                </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                                <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                    {product.category}
-                                </span>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                ${product.price}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${product.stock > 10 ? 'bg-green-100 text-green-800' :
-                                    product.stock > 0 ? 'bg-yellow-100 text-yellow-800' :
-                                        'bg-red-100 text-red-800'
-                                    }`}>
-                                    {product.stock} units
-                                </span>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {product.soldCount} sold
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                                <EditProductButton product={product} />
-                                <DeleteProductButton productId={product.id} productName={product.name} />
-                            </td>
+        <div className="bg-white shadow-sm rounded-xl border border-gray-100 overflow-hidden">
+            {/* เพิ่ม overflow-x-auto ตรงนี้เพื่อให้ตารางเลื่อนซ้ายขวาได้บนมือถือ */}
+            <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+                <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                        <tr>
+                            <th className="px-4 md:px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Product</th>
+                            <th className="px-4 md:px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Category</th>
+                            <th className="px-4 md:px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Price</th>
+                            <th className="px-4 md:px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Stock</th>
+                            <th className="px-4 md:px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Sold</th>
+                            <th className="px-4 md:px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Actions</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-100">
+                        {productsWithStats.map(product => (
+                            <tr key={product.id} className="hover:bg-gray-50 transition-colors">
+                                <td className="px-4 md:px-6 py-4 whitespace-nowrap">
+                                    <div className="flex items-center">
+                                        <div className="flex-shrink-0 h-10 w-10 bg-gray-100 rounded-lg flex items-center justify-center mr-3">
+                                            <Package className="w-5 h-5 text-gray-500" />
+                                        </div>
+                                        <div className="text-sm font-bold text-gray-900">{product.name}</div>
+                                    </div>
+                                </td>
+                                <td className="px-4 md:px-6 py-4 whitespace-nowrap">
+                                    <span className="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-md bg-blue-50 text-blue-700 border border-blue-100">
+                                        {product.category}
+                                    </span>
+                                </td>
+                                <td className="px-4 md:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    ${product.price.toFixed(2)}
+                                </td>
+                                <td className="px-4 md:px-6 py-4 whitespace-nowrap">
+                                    <span className={`px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-md border ${product.stock > 10 ? 'bg-green-50 text-green-700 border-green-100' :
+                                            product.stock > 0 ? 'bg-yellow-50 text-yellow-700 border-yellow-100' :
+                                                'bg-red-50 text-red-700 border-red-100'
+                                        }`}>
+                                        {product.stock} units
+                                    </span>
+                                </td>
+                                <td className="px-4 md:px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                    {product.soldCount} sold
+                                </td>
+                                <td className="px-4 md:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    {/* จัดปุ่มให้เว้นระยะห่างกันพอดีและไม่โดนบีบ */}
+                                    <div className="flex items-center justify-end gap-2">
+                                        <EditProductButton product={product} />
+                                        <DeleteProductButton productId={product.id} productName={product.name} />
+                                    </div>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
         </div>
     )
 }
@@ -88,15 +95,22 @@ export default async function ProductsPage() {
     }
 
     return (
-        <div className="p-8 space-y-6">
-            <div className="flex justify-between items-center">
+        // ปรับ Padding รอบนอกให้พอดีบนมือถือ (p-4) และจอใหญ่ (md:p-8)
+        <div className="p-4 md:p-8 space-y-4 md:space-y-6 max-w-7xl mx-auto">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Product Management</h1>
-                    <p className="text-gray-500">Manage your inventory, track sales, and update product details.</p>
+                    <h1 className="text-xl md:text-2xl font-bold text-gray-900">Product Management</h1>
+                    <p className="text-sm md:text-base text-gray-500 mt-1">Manage your inventory, track sales, and update product details.</p>
                 </div>
+                {/* ถ้าในอนาคตมีปุ่ม Add Product สามารถใส่ตรงนี้ได้เลย (เหมือนหน้า Overview) */}
             </div>
 
-            <Suspense fallback={<div className="text-center py-20">Loading products...</div>}>
+            <Suspense fallback={
+                <div className="text-center py-20 flex flex-col items-center justify-center text-gray-500">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mb-4"></div>
+                    Loading products...
+                </div>
+            }>
                 <ProductsTable />
             </Suspense>
         </div>
