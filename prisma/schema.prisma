@@ -27,7 +27,6 @@ enum InventoryStatus {
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
-  name         String?
   passwordHash String
   role         Role     @default(VIEWER)
   createdAt    DateTime @default(now())
@@ -36,8 +35,6 @@ model User {
 
 model Customer {
   id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
   region    Region
   isActive  Boolean  @default(true)
   sales     Sale[]
@@ -49,8 +46,6 @@ model Product {
   id                 String              @id @default(cuid())
   name               String
   price              Float
-  category           String
-  description        String?
   sales              Sale[]
   inventorySnapshots InventorySnapshot[]
   createdAt          DateTime            @default(now())
@@ -66,31 +61,31 @@ model Sale {
   productId  String
   product    Product  @relation(fields: [productId], references: [id])
   createdAt  DateTime @default(now())
+
+  @@index([createdAt])
 }
 
 model InventorySnapshot {
-  id           String          @id @default(cuid())
-  productId    String
-  product      Product         @relation(fields: [productId], references: [id])
-  onHand       Int
-  status       InventoryStatus
-  snapshotDate DateTime        @default(now())
+  id        String          @id @default(cuid())
+  productId String
+  product   Product         @relation(fields: [productId], references: [id])
+  status    InventoryStatus
+  onHand    Int
+  createdAt DateTime        @default(now())
 }
 
 model ActivityLog {
-  id        String   @id @default(cuid())
-  user      String   // User email or ID
-  action    String
-  details   String?
-  createdAt DateTime @default(now())
+  id          String   @id @default(cuid())
+  status      String
+  description String
+  createdAt   DateTime @default(now())
 }
 
 model FunnelWeekly {
-  id        String   @id @default(cuid())
-  weekStart DateTime
-  visitors  Int
-  views     Int
-  cart      Int
-  purchase  Int
-  createdAt DateTime @default(now())
+  id           String   @id @default(cuid())
+  weekStart    DateTime
+  visitors     Int
+  productViews Int
+  addToCart    Int
+  purchases    Int
 }

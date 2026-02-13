@@ -3,94 +3,66 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
-export async function getTopProducts() {
-    const topSales = await prisma.sale.groupBy({
-        by: ['productId'],
-        _sum: {
-            amount: true,
-            quantity: true,
-        },
-        orderBy: {
-            _sum: {
-                amount: 'desc',
-            },
-        },
-        take: 5,
-    })
+export const insightsService = {
+    async getTopProducts() {
+        const topProducts = await prisma.sale.groupBy({
+            by: ['productId'],
+            _sum: { amount: true, quantity: true },
+            orderBy: { _sum: { amount: 'desc' } },
+            take: 2,
+        })
 
-    // Fetch product details
-    const products = await Promise.all(
-        topSales.map(async (sale) => {
-            const product = await prisma.product.findUnique({
-                where: { id: sale.productId },
-            })
+        // Enrich with product names
+        const enrichedProducts = await Promise.all(topProducts.map(async (p) => {
+            const product = await prisma.product.findUnique({ where: { id: p.productId } })
             return {
                 name: product?.name || 'Unknown',
-                amount: sale._sum.amount || 0,
-                quantity: sale._sum.quantity || 0,
+                revenue: p._sum.amount || 0,
+                quantity: p._sum.quantity || 0,
             }
+        }))
+
+        return enrichedProducts
+    },
+
+    async getRegionalPerformance() {
+        // We need sales joined with customer region.
+        // Prisma groupBy doesn't support joining relations directly.
+        // Use findMany and aggregate in JS.
+        const sales = await prisma.sale.findMany({
+            include: { customer: true },
         })
-    )
 
-    return products
-}
+        const regionStats: Record<string, number> = {}
 
-export async function getRegionalPerformance() {
-    // Aggregate sales by customer region
-    // Since Relation aggregation for groupBy is not fully supported in simple API, 
-    // we might use raw query or fetch and map.
-    // Using queryRaw for efficiency.
+        sales.forEach(sale => {
+            const region = sale.customer.region
+            regionStats[region] = (regionStats[region] || 0) + sale.amount
+        })
 
-    const result = await prisma.$queryRaw`
-    SELECT c.region, SUM(s.amount) as amount
-    FROM "Sale" s
-    JOIN "Customer" c ON s."customerId" = c.id
-    GROUP BY c.region
-  ` as { region: string, amount: number }[]
+        return Object.entries(regionStats).map(([region, sales]) => ({ region, sales }))
+    },
 
-    // Serialize BigInt if any (Prisma sums might be Decimal/Float but raw query might differ)
-    // safe cast
-    return result.map(r => ({
-        region: r.region,
-        amount: Number(r.amount)
-    }))
-}
+    async getFunnelData() {
+        // Get the latest weekly funnel
+        return await prisma.funnelWeekly.findFirst({
+            orderBy: { weekStart: 'desc' }
+        })
+    },
 
-export async function getFunnelData() {
-    // Get the latest weekly funnel
-    return await prisma.funnelWeekly.findMany({
-        orderBy: {
-            weekStart: 'asc',
-        },
-        take: 4
-    })
-}
+    async getDropOffData() {
+        // Calculate drop-off rates from the funnel
+        const funnel = await this.getFunnelData()
+        if (!funnel) return []
 
-export async function getCustomerDropoff() {
-    // Derived from funnel data - simplistic view
-    const funnels = await getFunnelData()
-    if (funnels.length === 0) return []
+        const visitorsToView = ((funnel.visitors - funnel.productViews) / funnel.visitors) * 100
+        const viewToCart = ((funnel.productViews - funnel.addToCart) / funnel.productViews) * 100
+        const cartToPurchase = ((funnel.addToCart - funnel.purchases) / funnel.addToCart) * 100
 
-    // Average of last 4 weeks
-    const avg = {
-        visitors: 0,
-        views: 0,
-        cart: 0,
-        purchase: 0
+        return [
+            { step: 'Visitors -> View', dropOffRate: visitorsToView.toFixed(1) },
+            { step: 'View -> Cart', dropOffRate: viewToCart.toFixed(1) },
+            { step: 'Cart -> Purchase', dropOffRate: cartToPurchase.toFixed(1) },
+        ]
     }
-
-    funnels.forEach(f => {
-        avg.visitors += f.visitors
-        avg.views += f.views
-        avg.cart += f.cart
-        avg.purchase += f.purchase
-    })
-
-    const count = funnels.length
-    return [
-        { name: 'Visitors', value: Math.round(avg.visitors / count) },
-        { name: 'Views', value: Math.round(avg.views / count) },
-        { name: 'Cart', value: Math.round(avg.cart / count) },
-        { name: 'Purchase', value: Math.round(avg.purchase / count) },
-    ]
 }

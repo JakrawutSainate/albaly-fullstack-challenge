@@ -1,6 +1,13 @@
 # Albaly Insights
 
-Production-ready dashboard application built with **Next.js 14**, **TypeScript**, **Tailwind CSS**, and **PostgreSQL (Docker)**. Designed with a strict Clean Architecture approach separating UI from Business Logic.
+![Next.js](https://img.shields.io/badge/Next.js-16.1-black?style=for-the-badge&logo=next.js&logoColor=white)
+![React](https://img.shields.io/badge/React-19.0-61DAFB?style=for-the-badge&logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.0-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-24.0-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![Prisma](https://img.shields.io/badge/Prisma-5.22-2D3748?style=for-the-badge&logo=prisma&logoColor=white)
+
+Production-ready dashboard application built with **Next.js 16**, **React 19**, **TypeScript**, **Tailwind CSS 4**, and **PostgreSQL (Docker)**. Designed with a strict Clean Architecture approach separating UI from Business Logic.
 
 ## ✨ Features Implemented
 
@@ -26,6 +33,27 @@ Production-ready dashboard application built with **Next.js 14**, **TypeScript**
     - **Regional Performance**: Progress bars for regional sales.
     - **Top Products**: Comparison of best-selling items.
 - **Modern Styling**: Tailwind CSS with a refined Slate/Indigo palette and specialized components (Glassmorphism touches).
+
+---
+
+## 📂 Project Structure
+
+```bash
+src/
+├── app/                    # Next.js App Router
+│   ├── (auth)/             # Auth routes (Login)
+│   ├── (dashboard)/        # Protected dashboard routes
+│   └── api/                # API Routes (Controllers)
+├── components/             # Reusable UI components
+│   ├── overview/           # Dashboard-specific widgets
+│   └── insights/           # Analytics charts
+├── services/               # Business Logic & DB calls
+├── lib/                    # Utilities (Auth, Formaters)
+└── middleware.ts           # Route protection logic
+prisma/
+├── schema.prisma           # Database Schema
+└── seed.ts                 # Data seeding script
+```
 
 ---
 
@@ -57,9 +85,12 @@ docker-compose up -d
 ```
 
 ### 2. Environment Setup
-Rename `.env.example` to `.env` (or create one) and ensure the `DATABASE_URL` matches the Docker config:
+Duplicate the example environment file:
+```bash
+cp .env.example .env
+```
+Ensure the `DATABASE_URL` in `.env` matches your Docker configuration:
 ```env
-# Default credentials from docker-compose.yml
 DATABASE_URL="postgresql://albaly_user:albaly_password@localhost:5432/albaly_insights?schema=public"
 ```
 
@@ -69,7 +100,7 @@ npm install
 ```
 
 ### 4. Setup Database & Seed Data
-Push the schema to the database and run the seed script to generate **User**, **Sales**, **Funnel**, and **Activity** data.
+Push the schema to the database and populate it with realistic mock data:
 ```bash
 npx prisma db push
 npx prisma db seed
@@ -81,6 +112,8 @@ npm run dev
 ```
 Open [http://localhost:3000](http://localhost:3000) to view the application.
 
+---
+
 ## 🔐 Credentials
 
 The seed script creates two users for testing:
@@ -90,6 +123,7 @@ The seed script creates two users for testing:
 | **Admin** | `admin@albaly.com` | `password123` |
 | **Viewer** | `viewer@albaly.com` | `password123` |
 
+---
 
 ## 🏗️ Architecture Note
 

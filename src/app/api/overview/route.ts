@@ -1,30 +1,22 @@
-import { NextRequest } from 'next/server';
-import { AnalyticsService } from '@/services/analytics.service';
-import { ApiResponse } from '@/lib/api-response';
 
-export async function GET(request: NextRequest) {
+import { NextResponse } from 'next/server'
+import { dashboardService } from '@/services/dashboard'
+
+export const dynamic = 'force-dynamic'
+
+export async function GET() {
     try {
-        const analyticsService = new AnalyticsService();
+        const kpi = await dashboardService.getKPIMetrics()
+        const activity = await dashboardService.getRecentActivity()
+        const monthlyPerformance = await dashboardService.getMonthlyPerformance()
 
-        // Parallel fetch for performance
-        const [kpi, monthlyPerformance] = await Promise.all([
-            analyticsService.getKpiData(),
-            analyticsService.getMonthlyPerformance()
-        ]);
-
-        // Mock recent activity as per service limitation
-        const recentActivity = [
-            { id: '1', action: 'NEW_CUSTOMER', details: 'New customer signed up', timestamp: new Date().toISOString() },
-            { id: '2', action: 'PURCHASE', details: 'Order #1234 completed', timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() },
-        ];
-
-        return ApiResponse.success({
+        return NextResponse.json({
             kpi,
-            monthlyPerformance,
-            recentActivity
-        });
+            activity,
+            monthlyPerformance
+        })
     } catch (error) {
-        console.error('Overview API Error:', error);
-        return ApiResponse.internalError('Failed to fetch overview data');
+        console.error('Overview API Error:', error)
+        return NextResponse.json({ error: { code: 'INTERNAL_SERVER_ERROR', message: 'Failed to fetch overview data' } }, { status: 500 })
     }
 }
