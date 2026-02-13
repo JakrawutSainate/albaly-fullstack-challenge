@@ -35,16 +35,17 @@ export async function login(prevState: any, formData: FormData) {
     }
 
     const isValid = await bcrypt.compare(password, user.passwordHash).catch(() => false)
-    const isDemoUser = ((email === 'admin@albaly.com' || email === 'viewer@albaly.com') && password === 'password123')
 
-    if (!isValid && !isDemoUser) {
+
+    if (!isValid) {
         return {
             message: 'Invalid credentials',
         }
     }
 
     await createSession(user.id, user.email, user.role)
-    redirect('/overview')
+    const target = user.role === 'ADMIN' ? '/overview' : '/store'
+    redirect(target)
 }
 
 export async function logout() {

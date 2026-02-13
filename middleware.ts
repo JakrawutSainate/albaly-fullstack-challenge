@@ -15,13 +15,31 @@ export default async function middleware(req: NextRequest) {
     const cookie = req.cookies.get('session')?.value
     const session = cookie ? await decrypt(cookie) : null
 
-    // กรณีมี Session แล้วแต่จะเข้าหน้า Login ให้เตะไปหน้า Overview
-    if (isPublicRoute && session?.userId) {
-        return NextResponse.redirect(new URL('/overview', req.nextUrl))
+    // 4. Role-based Redirection
+    if (session?.userId) {
+        const role = session.role
+
+        // Viewer try to access Admin routes -> Redirect to Store
+        if (role === 'VIEWER' && (path.startsWith('/overview') || path.startsWith('/insights'))) {
+            return NextResponse.redirect(new URL('/store', req.nextUrl))
+        }
+
+        // Admin try to access Viewer routes (optional, but requested "separate faces")
+        // Note: Usually admins can see everything, but to start them on overview:
+        if (role === 'ADMIN' && path === '/') {
+            return NextResponse.redirect(new URL('/overview', req.nextUrl))
+        }
     }
 
-    // กรณีไม่มี Session แต่พยายามเข้าหน้า Dashboard
-    if (isProtectedRoute && !session?.userId) {
+    // 2. Public Route Logic (Already logged in)
+    if (isPublicRoute && session?.userId) {
+        // Redirect based on role
+        const target = session.role === 'ADMIN' ? '/overview' : '/store'
+        return NextResponse.redirect(new URL(target, req.nextUrl))
+    }
+
+    // 3. Protected Route Logic (Not logged in)
+    if ((isProtectedRoute || path.startsWith('/store')) && !session?.userId) {
         return NextResponse.redirect(new URL('/login', req.nextUrl))
     }
 

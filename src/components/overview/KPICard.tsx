@@ -32,7 +32,7 @@ export function KPICard({ title, value, trend, change, trendLabel, icon: Icon, i
                 </div>
             </div>
             <div className="mt-4">
-                {trend !== undefined && (
+                {changeValue !== undefined && (
                     <div className="flex items-center text-sm">
                         {isNeutral ? (
                             <Minus className="flex-shrink-0 h-4 w-4 text-gray-400" aria-hidden="true" />
@@ -42,7 +42,7 @@ export function KPICard({ title, value, trend, change, trendLabel, icon: Icon, i
                             <ArrowDown className="flex-shrink-0 h-4 w-4 text-red-500" aria-hidden="true" />
                         )}
                         <span className={`ml-1 font-medium ${isNeutral ? 'text-gray-500' : isPositive ? 'text-green-600' : 'text-red-600'}`}>
-                            {Math.abs(trend)}%
+                            {Math.abs(changeValue)}%
                         </span>
                         <span className="ml-2 text-gray-500">{trendLabel || 'vs last month'}</span>
                     </div>

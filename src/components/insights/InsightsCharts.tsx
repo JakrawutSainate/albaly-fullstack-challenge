@@ -1,12 +1,12 @@
 'use client'
 
-import { TopProductsChart, RegionalChart, ConversionFunnelChart, DropOffTable } from './Charts'
+import { TopProductsChart, RegionalChart, ConversionFunnelChart, DropOffTable, TopProduct, RegionalData, FunnelData, DropOffItem } from './Charts'
 
 interface InsightsChartsProps {
-    topProducts: any[]
-    regionalPerformance: any[]
-    funnel: any
-    dropOff: any[]
+    topProducts: TopProduct[]
+    regionalPerformance: RegionalData[]
+    funnel: FunnelData | null
+    dropOff: DropOffItem[]
 }
 
 export function InsightsCharts({ topProducts, regionalPerformance, funnel, dropOff }: InsightsChartsProps) {

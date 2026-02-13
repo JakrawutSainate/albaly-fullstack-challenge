@@ -31,7 +31,7 @@ export function RegisterForm() {
 
         if (result.success) {
             addToast('Registration successful!', 'success')
-            router.push('/overview')
+            router.push('/store') // New users are VIEWER role
             router.refresh()
         } else {
             const msg = result.error?.message || 'Registration failed'

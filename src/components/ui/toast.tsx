@@ -1,27 +1,15 @@
 'use client'
 
 import { createContext, useContext, useState, useEffect } from 'react'
-
-type ToastType = 'success' | 'error' | 'info'
-
-interface Toast {
-    id: string
-    message: string
-    type: ToastType
-}
-
-interface ToastContextType {
-    toasts: Toast[]
-    addToast: (message: string, type: ToastType) => void
-    removeToast: (id: string) => void
-}
+import type { Toast, ToastContextType } from '@/types/api-response'
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined)
+
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
     const [toasts, setToasts] = useState<Toast[]>([])
 
-    const addToast = (message: string, type: ToastType) => {
+    const addToast = (message: string, type: Toast['type']) => {
         const id = Math.random().toString(36).substring(2, 9)
         setToasts((prev) => [...prev, { id, message, type }])
 
@@ -38,15 +26,25 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     return (
         <ToastContext.Provider value={{ toasts, addToast, removeToast }}>
             {children}
-            <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
+            <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3">
                 {toasts.map((toast) => (
                     <div
                         key={toast.id}
-                        className={`px-4 py-2 rounded-lg shadow-lg text-white text-sm font-medium animate-fade-in-up transition-all ${toast.type === 'success' ? 'bg-green-500' :
-                                toast.type === 'error' ? 'bg-red-500' : 'bg-blue-500'
+                        className={`flex items-center gap-3 px-6 py-4 rounded-xl shadow-xl border text-white transform transition-all duration-300 ease-in-out hover:scale-105 ${toast.type === 'success' ? 'bg-green-600 border-green-500' :
+                            toast.type === 'error' ? 'bg-red-600 border-red-500' :
+                                'bg-blue-600 border-blue-500'
                             }`}
                     >
-                        {toast.message}
+                        {toast.type === 'success' && (
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                        )}
+                        {toast.type === 'error' && (
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        )}
+                        {toast.type === 'info' && (
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        )}
+                        <span className="font-semibold text-base">{toast.message}</span>
                     </div>
                 ))}
             </div>

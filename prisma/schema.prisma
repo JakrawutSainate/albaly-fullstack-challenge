@@ -47,6 +47,7 @@ model Product {
   name               String
   price              Float
   category           String              @default("Office") // Added category as per prompt
+  imageUrl           String?             // Product image URL
   sales              Sale[]
   inventorySnapshots InventorySnapshot[]
   createdAt          DateTime            @default(now())

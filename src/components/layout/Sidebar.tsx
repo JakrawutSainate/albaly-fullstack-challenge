@@ -6,13 +6,15 @@ import { usePathname } from 'next/navigation'
 import { LayoutDashboard, LineChart, LogOut, Package } from 'lucide-react'
 import { logout } from '@/app/actions'
 import { startTransition } from 'react'
+import type { SidebarProps } from '@/types/api-response'
 
 const navigation = [
     { name: 'Overview', href: '/overview', icon: LayoutDashboard },
     { name: 'Insights', href: '/insights', icon: LineChart },
+    { name: 'Products', href: '/products', icon: Package },
 ]
 
-export default function Sidebar() {
+export default function Sidebar({ userEmail, userRole }: SidebarProps) {
     const pathname = usePathname()
 
     return (
@@ -29,8 +31,8 @@ export default function Sidebar() {
                                 key={item.name}
                                 href={item.href}
                                 className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-150 ${isActive
-                                        ? 'bg-indigo-600 text-white'
-                                        : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                                    ? 'bg-indigo-600 text-white'
+                                    : 'text-gray-400 hover:bg-gray-800 hover:text-white'
                                     }`}
                             >
                                 <item.icon className="mr-3 h-5 w-5" aria-hidden="true" />

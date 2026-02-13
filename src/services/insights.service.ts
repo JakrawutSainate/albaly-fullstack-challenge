@@ -38,7 +38,12 @@ export async function getFunnelData() {
         take: 1
     })
 
-    return funnel[0] || null
+    if (!funnel[0]) return null
+
+    return {
+        ...funnel[0],
+        weekStart: funnel[0].weekStart.toISOString()
+    }
 }
 
 export async function getDropOffData() {

@@ -3,7 +3,30 @@
 
 import { Bar, BarChart, CartesianGrid, Cell, Funnel, FunnelChart, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 
-export function TopProductsChart({ data }: { data: any[] }) {
+export interface TopProduct {
+    name: string
+    revenue: number
+    quantity?: number
+}
+
+export interface RegionalData {
+    region: string
+    sales: number
+}
+
+export interface FunnelData {
+    visitors: number
+    productViews: number
+    addToCart: number
+    purchases: number
+}
+
+export interface DropOffItem {
+    step: string
+    dropOffRate: string
+}
+
+export function TopProductsChart({ data }: { data: TopProduct[] }) {
     return (
         <div className="bg-white p-6 rounded-lg shadow">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Top Products</h3>
@@ -22,7 +45,7 @@ export function TopProductsChart({ data }: { data: any[] }) {
     )
 }
 
-export function RegionalChart({ data }: { data: any[] }) {
+export function RegionalChart({ data }: { data: RegionalData[] }) {
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
     return (
@@ -54,7 +77,7 @@ export function RegionalChart({ data }: { data: any[] }) {
     )
 }
 
-export function ConversionFunnelChart({ data }: { data: any }) {
+export function ConversionFunnelChart({ data }: { data: FunnelData | null }) {
     // Transform funnel object to array for Recharts if needed, or if service returns object
     // Service returns { visitors, productViews, addToCart, purchases }
     // Recharts Funnel needs array
@@ -86,7 +109,7 @@ export function ConversionFunnelChart({ data }: { data: any }) {
     )
 }
 
-export function DropOffTable({ data }: { data: any[] }) {
+export function DropOffTable({ data }: { data: DropOffItem[] }) {
     return (
         <div className="bg-white p-6 rounded-lg shadow">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Drop-off Rates</h3>

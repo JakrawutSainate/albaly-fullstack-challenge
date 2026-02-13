@@ -1,5 +1,6 @@
 
 import { PrismaClient, Role, Region, InventoryStatus } from '@prisma/client'
+import { hashSync } from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
@@ -16,7 +17,7 @@ async function main() {
     await prisma.funnelWeekly.deleteMany()
 
     // 2. Users
-    const passwordHash = '$2b$10$EpI.j/Vb1.5.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0' // 'password123' hashed
+    const passwordHash = hashSync('password123', 10)
 
     await prisma.user.create({
         data: {
@@ -36,12 +37,12 @@ async function main() {
 
     // 3. Products
     const products = [
-        { name: 'Ergonomic Chair', price: 250, category: 'Furniture' },
-        { name: 'Standing Desk', price: 450, category: 'Furniture' },
-        { name: 'Monitor Arm', price: 80, category: 'Accessories' },
-        { name: 'Desk Lamp', price: 45, category: 'Lighting' },
-        { name: 'Cable Tray', price: 25, category: 'Accessories' },
-        { name: 'Mechanical Keyboard', price: 120, category: 'Electronics' },
+        { name: 'Ergonomic Chair', price: 250, category: 'Furniture', imageUrl: 'https://picsum.photos/seed/chair/400/300' },
+        { name: 'Standing Desk', price: 450, category: 'Furniture', imageUrl: 'https://picsum.photos/seed/desk/400/300' },
+        { name: 'Monitor Arm', price: 80, category: 'Accessories', imageUrl: 'https://picsum.photos/seed/monitor/400/300' },
+        { name: 'Desk Lamp', price: 45, category: 'Lighting', imageUrl: 'https://picsum.photos/seed/lamp/400/300' },
+        { name: 'Cable Tray', price: 25, category: 'Accessories', imageUrl: 'https://picsum.photos/seed/cable/400/300' },
+        { name: 'Mechanical Keyboard', price: 120, category: 'Electronics', imageUrl: 'https://picsum.photos/seed/keyboard/400/300' },
     ]
 
     const createdProducts = []
