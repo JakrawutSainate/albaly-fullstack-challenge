@@ -2,7 +2,6 @@
 import { getTopProducts, getRegionalPerformance, getFunnelData, getDropOffData } from '@/services/insights.service'
 import { InsightsCharts } from '@/components/insights/InsightsCharts'
 
-export const dynamic = 'force-dynamic'
 
 export default async function InsightsPage() {
     const [topProducts, regionalPerformance, funnel, dropOff] = await Promise.all([

@@ -7,7 +7,6 @@ import { getSession } from '@/lib/auth'
 import { AddProductButton } from '@/components/products/AddProductButton'
 import { KPISkeleton } from '@/components/skeletons/KPISkeleton'
 
-export const dynamic = 'force-dynamic'
 
 async function OverviewContent({ role }: { role?: string }) {
     const [kpi, activity, monthlyPerformance] = await Promise.all([
@@ -41,14 +40,14 @@ async function OverviewContent({ role }: { role?: string }) {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">Revenue Growth</h3>
+                <div className="lg:col-span-2 bg-white rounded-xl shadow-sm p-6">
+                    <h3 className="text-lg font-semibold text-black  mb-6">Revenue Growth</h3>
                     <OverviewCharts type="revenue" data={monthlyPerformance} />
                 </div>
 
                 {role === 'ADMIN' && (
-                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center">
+                    <div className="bg-white rounded-xl shadow-sm p-6">
+                        <h3 className="text-lg font-semibold text-black mb-6 flex items-center">
                             <Activity className="w-5 h-5 mr-2 text-indigo-500" />
                             Recent Activity
                         </h3>
@@ -59,8 +58,8 @@ async function OverviewContent({ role }: { role?: string }) {
                                         item.status === 'warning' ? 'bg-yellow-500' : 'bg-blue-500'
                                         }`} />
                                     <div>
-                                        <p className="text-sm font-medium text-gray-900 dark:text-white">{item.description}</p>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                        <p className="text-sm font-medium text-black">{item.description}</p>
+                                        <p className="text-xs text-gray-500 mt-1">
                                             {item.createdAt.toISOString().split('T')[0]}
                                         </p>
                                     </div>
@@ -81,8 +80,8 @@ export default async function OverviewPage() {
         <div className="p-8 space-y-8">
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard Overview</h1>
-                    <p className="text-gray-500 dark:text-gray-400">Welcome back, {session?.email}</p>
+                    <h1 className="text-2xl font-bold text-black">Dashboard Overview</h1>
+                    <p className="text-gray-500">Welcome back, {session?.email}</p>
                 </div>
                 {session?.role === 'ADMIN' && <AddProductButton />}
             </div>

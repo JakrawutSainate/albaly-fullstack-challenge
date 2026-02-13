@@ -6,7 +6,6 @@ import { Package, Edit, Trash2 } from 'lucide-react'
 import { EditProductButton } from '@/components/products/EditProductButton'
 import { DeleteProductButton } from '@/components/products/DeleteProductButton'
 
-export const dynamic = 'force-dynamic'
 
 async function ProductsTable() {
     const products = await prisma.product.findMany({
@@ -61,8 +60,8 @@ async function ProductsTable() {
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                                 <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${product.stock > 10 ? 'bg-green-100 text-green-800' :
-                                        product.stock > 0 ? 'bg-yellow-100 text-yellow-800' :
-                                            'bg-red-100 text-red-800'
+                                    product.stock > 0 ? 'bg-yellow-100 text-yellow-800' :
+                                        'bg-red-100 text-red-800'
                                     }`}>
                                     {product.stock} units
                                 </span>
