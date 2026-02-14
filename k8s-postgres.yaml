@@ -1,3 +1,36 @@
+# 1. ConfigMap: สำหรับเก็บค่าคอนฟิกทั่วไปที่ไม่เป็นความลับ
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+data:
+  db_name: "albaly_insights"
+---
+# 2. Secret: สำหรับเก็บรหัสผ่าน (Base64 Encoded)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-secret
+type: Opaque
+data:
+  # albaly_user
+  username: YWxiYWx5X3VzZXI=
+  # albaly_password
+  password: YWxiYWx5X3Bhc3N3b3Jk
+---
+# 3. PVC: สำหรับจองพื้นที่เก็บข้อมูลใน Drive D: (ผ่าน Docker Desktop)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+# 4. Deployment: ตัวควบคุมการรันคอนเทนเนอร์ Postgres
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -16,23 +49,43 @@ spec:
       - name: postgres
         image: postgres:15-alpine
         env:
+        # ดึง Username จาก Secret
         - name: POSTGRES_USER
-          value: "albaly_user"
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: username
+        # ดึง Password จาก Secret
         - name: POSTGRES_PASSWORD
-          value: "albaly_password"
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: password
         - name: POSTGRES_DB
-          value: "albaly_insights"
+          valueFrom:
+            configMapKeyRef:
+              name: postgres-config
+              key: db_name
         ports:
-        - containerPort: 5432 # พอร์ตดั้งเดิมของ Postgres ที่รันอยู่ด้านใน
+        - containerPort: 5432
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: postgres-pvc
 ---
+# 5. Service: ช่องทางเชื่อมต่อจากแอป Next.js และเครื่อง Local
 apiVersion: v1
 kind: Service
 metadata:
   name: postgres-service
 spec:
-  type: LoadBalancer # ใส่เป็น LoadBalancer เพื่อให้คุณใช้โปรแกรมอย่าง DBeaver หรือ pgAdmin ต่อเข้ามาที่ localhost:5435 ได้เลย
+  type: LoadBalancer 
   selector:
     app: postgres
   ports:
-  - port: 5435       # พอร์ตที่เราต้องการให้คนอื่นเรียกใช้
-    targetPort: 5432 # โยนทราฟฟิกไปที่พอร์ต 5432 ของคอนเทนเนอร์
+  - name: db-port
+    port: 5435       # พอร์ตที่ Service รับข้อมูล
+    targetPort: 5432 # พอร์ตจริงที่ Container ใช้งาน

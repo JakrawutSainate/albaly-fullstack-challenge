@@ -1,28 +1,38 @@
 # Albaly Insights
 
-Production-ready dashboard application built with **Next.js 16**, **React 19**, **TypeScript**, **Tailwind CSS 4**, and **PostgreSQL (Docker)**. Designed with a strict Clean Architecture approach separating UI from Business Logic.
+![Next.js](https://img.shields.io/badge/Next.js-16.1.6-black?style=for-the-badge&logo=next.js&logoColor=white)
+![React](https://img.shields.io/badge/React-19.0-61DAFB?style=for-the-badge&logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.0-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-24.0-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![Prisma](https://img.shields.io/badge/Prisma-5.22-2D3748?style=for-the-badge&logo=prisma&logoColor=white)
+
+Production-ready dashboard application built with **Next.js 16.1.6**, **React 19**, **TypeScript**, **Tailwind CSS 4**, and **PostgreSQL (Docker/K8s)**. Designed with a strict **Clean Architecture** approach separating UI from Business Logic.
 
 ---
 
 ## ✨ Features Implemented
 
 ### 1. Infrastructure & Backend
-- **Dockerized PostgreSQL**: `docker-compose.yml` for easy database setup.
-- **Clean Architecture**: Strict separation of concerns (Layered: `UI` -> `Page (Controller)` -> `Service` -> `Repository/Prisma`).
-- **Real Data Seeding**: `prisma/seed.ts` generates realistic data for Users, Sales, Funnel, and Inventory.
-- **Middleware Protection**: Protected `/overview` and `/insights` routes via `src/middleware.ts`.
-- **Standardized API**: `ApiResponse` wrapper for consistent success/error JSON responses.
+- **Dockerized PostgreSQL**: `docker-compose.yml` for simplified detailed local development.
+- **Advanced Kubernetes Setup**: Production-ready infrastructure:
+  - **PersistentVolumeClaim (PVC)**: Prevents data loss even if Pods are deleted.
+  - **Secrets & ConfigMaps**: Manages credentials and system settings securely.
+- **Clean Architecture**: Strict separation of concerns (Layered: UI -> Page -> Service -> Prisma).
+- **Real Data Seeding**: `prisma/seed.ts` generates realistic mock data for Users, Sales, Funnel, and Inventory.
+- **Standardized API**: Uses `ApiResponse` wrapper for consistent Success/Error JSON responses.
 
 ### 2. UI & UX (Clean Enterprise)
 - **Dashboard Layout**: Responsive Sidebar and TopNav with breadcrumbs.
-- **Overview Page**: KPI Cards with trend indicators, Activity Feed, and Monthly Performance bar charts.
-- **Insights Page**: Conversion Funnel, Regional Performance, and Top Products comparison.
-- **Modern Styling**: Tailwind CSS 4 with a refined Slate/Indigo palette.
+- **Overview Page**: KPI Cards with trend indicators and Monthly Sales Bar charts.
+- **Insights Page**: Conversion Funnel and Top Products comparison.
 
-### 3. Shopping Cart & Role-Based Access
+### 3. Shopping Cart & Role-Based Access Control (RBAC)
 - **Product Store**: Browse products with real-time stock tracking.
-- **Shopping Cart System**: Quantity management, gradient design modal, and batch purchase.
-- **RBAC**: Middleware-enforced separation for Admin and Viewer roles.
+- **Shopping Cart**: Quantity management and order confirmation system.
+- **Access Control**: Role separation enforced via Middleware:
+  - **Admin**: Full system management (Dashboard, Insights, Config).
+  - **Viewer**: Store access and purchasing only.
 
 ---
 
@@ -51,13 +61,12 @@ prisma/
 
 | Action | Command | Description |
 | :--- | :--- | :--- |
-| **Start DB** | `docker-compose up -d` | Spins up PostgreSQL container in background |
+| **Start DB** | `docker-compose up -d` | Spins up PostgreSQL container for local dev |
 | **Stop DB** | `docker-compose down` | Stops and removes containers |
-| **Install** | `npm install` | Installs Node dependencies |
-| **Generate Client** | `npx prisma generate` | Generates Prisma Client after schema changes |
-| **Push Schema** | `npx prisma db push` | Syncs schema with database |
-| **Seed Data** | `npx prisma db seed` | Populates DB with users, sales, and logs |
-| **Prisma Studio** | `npx prisma studio` | Opens GUI to view/edit database data (Port 5555) |
+| **Prisma Studio** | `npx prisma studio` | Opens GUI to manage data (Default Port 5555) |
+| **Generate Client** | `npx prisma generate` | Re-generates Prisma Client after schema changes |
+| **Push Schema** | `npx prisma db push` | Syncs schema changes to the Database |
+| **Seed Data** | `npx prisma db seed` | Populates DB with initial mock data |
 | **Run Dev** | `npm run dev` | Starts Next.js dev server on port 3000 |
 
 ---
@@ -65,24 +74,24 @@ prisma/
 ## 🛠️ Prerequisites
 
 - **Node.js** (v18+)
-- **Docker Desktop** (with Kubernetes enabled for K8s testing)
+- **Docker Desktop** (Kubernetes must be enabled in Settings for K8s testing)
 
 ---
 
 ## 🏁 Getting Started
 
 ### 🐳 Option 1: Docker Environment (Standard Local Dev)
-*เหมาะสำหรับการพัฒนาผ่าน VS Code โดยใช้ Docker รันเฉพาะ Database และรันแอปผ่านเครื่อง Local (Port 3000)*
+*Recommended for local development via VS Code, running the App locally (Port 3000).*
 
 1. **Start Database:**
    ```bash
    docker-compose up -d
    ```
 
-2. **Environment Setup:**
+2. **Setup Environment:**
    ```bash
    cp .env.example .env
-   # Ensure DATABASE_URL points to localhost:5432
+   # Ensure DB port is set to 5435
    ```
 
 3. **Setup DB & Data:**
@@ -99,48 +108,45 @@ prisma/
 
 **Access:**
 - **App:** [http://localhost:3000](http://localhost:3000)
-- **Prisma Studio:** run `npx prisma studio` -> [http://localhost:5555](http://localhost:5555)
 
 ---
 
 ### ☸️ Option 2: Kubernetes Environment (Experimental/Testing)
-*สำหรับทดลองรันระบบทั้งหมดบน Kubernetes Cluster*
+*For testing the full-stack system on a local Kubernetes Cluster.*
 
-1. **Apply Manifests:**
+1. **Build Local Image:**
+   ```bash
+   docker build -t albaly-app:local .
+   ```
+
+2. **Apply Manifests:**
    ```bash
    kubectl apply -f k8s-postgres.yaml
    kubectl apply -f k8s-app.yaml
    ```
 
-2. **Database Tunnel (For Setup & Studio):**
-   *เปิด Terminal ใหม่รันค้างไว้:*
+3. **Database Tunnel (For Setup & Studio):**
+   *Open a new terminal and keep running:*
    ```bash
-   kubectl port-forward svc/postgres-service 5435:5432
+   kubectl port-forward svc/postgres-service 5435:5435
    ```
 
-3. **Setup Database (Via Tunnel):**
-   Based on your OS, set the `DATABASE_URL` before running commands:
+4. **Setup Database (Via Tunnel):**
    ```bash
    # Windows
    set DATABASE_URL=postgresql://albaly_user:albaly_password@localhost:5435/albaly_insights
-
-   # Mac/Linux
-   export DATABASE_URL="postgresql://albaly_user:albaly_password@localhost:5435/albaly_insights"
-
-   npx prisma generate
-   npx prisma db push
-   npx prisma db seed
+   
+   npx prisma generate && npx prisma db push && npx prisma db seed
    ```
 
-4. **Application Tunnel:**
-   *เปิด Terminal ใหม่รันค้างไว้:*
+5. **Application Tunnel:**
+   *Open a new terminal and keep running:*
    ```bash
    kubectl port-forward svc/albaly-app-service 7777:80
    ```
 
 **Access:**
 - **App (K8s):** [http://localhost:7777](http://localhost:7777)
-- **Prisma Studio:** `npx prisma studio` (runs via the tunnel on port 5435 if environment variable is set as above)
 
 ---
 
@@ -148,11 +154,14 @@ prisma/
 
 | Role | Email | Password | Access |
 | :--- | :--- | :--- | :--- |
-| **Admin** | `admin@albaly.com` | `password123` | Dashboard, Insights, Store, Management |
-| **Viewer** | `viewer@albaly.com` | `password123` | Store only (Shopping Cart) |
+| **Admin** | `admin@albaly.com` | `password123` | Dashboard, Insights, Product Management |
+| **Viewer** | `viewer@albaly.com` | `password123` | Store & Shopping Cart only |
 
 ---
 
 ## 🏗️ Architecture Note
 
-This project follows **Clean Architecture** principles. Server Components act as Controllers, delegating Business Logic to Services, which interact with the DB via Prisma.
+This project follows **Clean Architecture** principles:
+- **Server Components** (`page.tsx`) act as **Controllers**.
+- Controllers call **Services** (`src/services/*`) to handle business logic via **Prisma**.
+- All configuration is securely managed via **Kubernetes Secrets** and **ConfigMaps**.
