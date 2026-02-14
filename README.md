@@ -1,55 +1,28 @@
 # Albaly Insights
 
-![Next.js](https://img.shields.io/badge/Next.js-16.1-black?style=for-the-badge&logo=next.js&logoColor=white)
-![React](https://img.shields.io/badge/React-19.0-61DAFB?style=for-the-badge&logo=react&logoColor=black)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript&logoColor=white)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.0-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-24.0-2496ED?style=for-the-badge&logo=docker&logoColor=white)
-![Prisma](https://img.shields.io/badge/Prisma-5.22-2D3748?style=for-the-badge&logo=prisma&logoColor=white)
-
 Production-ready dashboard application built with **Next.js 16**, **React 19**, **TypeScript**, **Tailwind CSS 4**, and **PostgreSQL (Docker)**. Designed with a strict Clean Architecture approach separating UI from Business Logic.
+
+---
 
 ## ✨ Features Implemented
 
 ### 1. Infrastructure & Backend
 - **Dockerized PostgreSQL**: `docker-compose.yml` for easy database setup.
-- **Clean Architecture**: Strict separation of concerns (Layered: UI -> Page (Controller) -> Service -> Repository/Prisma).
-- **Real Data Seeding**: `prisma/seed.ts` generates realistic data for:
-    - **Users**: Admin & Viewer roles with hashed passwords.
-    - **Sales**: 50+ transactions over the last 3 months.
-    - **Funnel**: 4 weeks of conversion data (Access -> Cart -> Purchase).
-    - **Inventory & Activity Logs**: Snapshots and user action logs.
+- **Clean Architecture**: Strict separation of concerns (Layered: `UI` -> `Page (Controller)` -> `Service` -> `Repository/Prisma`).
+- **Real Data Seeding**: `prisma/seed.ts` generates realistic data for Users, Sales, Funnel, and Inventory.
 - **Middleware Protection**: Protected `/overview` and `/insights` routes via `src/middleware.ts`.
 - **Standardized API**: `ApiResponse` wrapper for consistent success/error JSON responses.
 
 ### 2. UI & UX (Clean Enterprise)
 - **Dashboard Layout**: Responsive Sidebar and TopNav with breadcrumbs.
-- **Overview Page**:
-    - **KPI Cards**: Real-time sales, customers, and inventory stats with trend indicators.
-    - **Activity Feed**: Live list of recent system actions fetched from DB.
-    - **Monthly Performance**: Bar chart visualization of sales data.
-- **Insights Page**:
-    - **Conversion Funnel**: Step-by-step funnel visualization.
-    - **Regional Performance**: Progress bars for regional sales.
-    - **Top Products**: Comparison of best-selling items.
-- **Modern Styling**: Tailwind CSS with a refined Slate/Indigo palette and specialized components (Glassmorphism touches).
+- **Overview Page**: KPI Cards with trend indicators, Activity Feed, and Monthly Performance bar charts.
+- **Insights Page**: Conversion Funnel, Regional Performance, and Top Products comparison.
+- **Modern Styling**: Tailwind CSS 4 with a refined Slate/Indigo palette.
 
-### 3. Shopping Cart & E-commerce
+### 3. Shopping Cart & Role-Based Access
 - **Product Store**: Browse products with real-time stock tracking.
-- **Shopping Cart System**:
-    - Add products to cart with quantity management.
-    - Beautiful cart modal with gradient design and hover effects.
-    - Live cart count badge in navigation.
-    - Batch purchase functionality.
-- **Product Management** (Admin only):
-    - Edit product details (name, price, stock, category).
-    - Real-time inventory updates.
-- **Toast Notifications**: User feedback for cart actions and purchases.
-
-### 4. Role-Based Access Control
-- **Admin Role**: Full access to dashboard, insights, and product management.
-- **Viewer Role**: Access to product store and shopping features only.
-- **Route Protection**: Middleware-enforced role separation.
+- **Shopping Cart System**: Quantity management, gradient design modal, and batch purchase.
+- **RBAC**: Middleware-enforced separation for Admin and Viewer roles.
 
 ---
 
@@ -59,19 +32,13 @@ Production-ready dashboard application built with **Next.js 16**, **React 19**, 
 src/
 ├── app/                    # Next.js App Router
 │   ├── (auth)/             # Auth routes (Login)
-│   ├── (dashboard)/        # Protected dashboard routes (Admin only)
-│   ├── (shop)/             # Store routes (All users)
+│   ├── (dashboard)/        # Protected dashboard routes
 │   └── api/                # API Routes (Controllers)
 ├── components/             # Reusable UI components
 │   ├── overview/           # Dashboard-specific widgets
-│   ├── insights/           # Analytics charts
-│   ├── store/              # Product cards and store UI
-│   ├── products/           # Product management components
-│   └── ui/                 # Shared UI components (Toast, etc.)
-├── contexts/               # React Context providers (Cart, Toast)
+│   └── insights/           # Analytics charts
 ├── services/               # Business Logic & DB calls
-├── lib/                    # Utilities (Auth, Formatters, Cart Modal)
-├── types/                  # Centralized TypeScript interfaces
+├── lib/                    # Utilities (Auth, Formaters)
 └── middleware.ts           # Route protection logic
 prisma/
 ├── schema.prisma           # Database Schema
@@ -88,71 +55,104 @@ prisma/
 | **Stop DB** | `docker-compose down` | Stops and removes containers |
 | **Install** | `npm install` | Installs Node dependencies |
 | **Generate Client** | `npx prisma generate` | Generates Prisma Client after schema changes |
-| **Push Schema** | `npx prisma db push` | Syncs schema with database (non-destructive if possible) |
+| **Push Schema** | `npx prisma db push` | Syncs schema with database |
 | **Seed Data** | `npx prisma db seed` | Populates DB with users, sales, and logs |
+| **Prisma Studio** | `npx prisma studio` | Opens GUI to view/edit database data (Port 5555) |
 | **Run Dev** | `npm run dev` | Starts Next.js dev server on port 3000 |
-| **Lint** | `npm run lint` | Runs ESLint check |
 
 ---
 
 ## 🛠️ Prerequisites
 
 - **Node.js** (v18+)
-- **Docker** & **Docker Compose**
-
-## 🏁 Getting Started
-
-### 1. Start Database
-Spin up the PostgreSQL container:
-```bash
-docker-compose up -d
-```
-
-### 2. Environment Setup
-Duplicate the example environment file:
-```bash
-cp .env.example .env
-```
-Ensure the `DATABASE_URL` in `.env` matches your Docker configuration:
-```env
-DATABASE_URL="postgresql://albaly_user:albaly_password@localhost:5432/albaly_insights?schema=public"
-```
-
-### 3. Install Dependencies
-```bash
-npm install
-```
-
-### 4. Setup Database & Seed Data
-Push the schema to the database and populate it with realistic mock data:
-```bash
-npx prisma db push
-npx prisma db seed
-```
-
-### 5. Run Development Server
-```bash
-npm run dev
-```
-Open [http://localhost:3000](http://localhost:3000) to view the application.
+- **Docker Desktop** (with Kubernetes enabled for K8s testing)
 
 ---
 
-## 🔐 Credentials
+## 🏁 Getting Started
 
-The seed script creates two users for testing:
+### 🐳 Option 1: Docker Environment (Standard Local Dev)
+*เหมาะสำหรับการพัฒนาผ่าน VS Code โดยใช้ Docker รันเฉพาะ Database และรันแอปผ่านเครื่อง Local (Port 3000)*
+
+1. **Start Database:**
+   ```bash
+   docker-compose up -d
+   ```
+
+2. **Environment Setup:**
+   ```bash
+   cp .env.example .env
+   # Ensure DATABASE_URL points to localhost:5432
+   ```
+
+3. **Setup DB & Data:**
+   ```bash
+   npx prisma generate
+   npx prisma db push
+   npx prisma db seed
+   ```
+
+4. **Run Application:**
+   ```bash
+   npm run dev
+   ```
+
+**Access:**
+- **App:** [http://localhost:3000](http://localhost:3000)
+- **Prisma Studio:** run `npx prisma studio` -> [http://localhost:5555](http://localhost:5555)
+
+---
+
+### ☸️ Option 2: Kubernetes Environment (Experimental/Testing)
+*สำหรับทดลองรันระบบทั้งหมดบน Kubernetes Cluster*
+
+1. **Apply Manifests:**
+   ```bash
+   kubectl apply -f k8s-postgres.yaml
+   kubectl apply -f k8s-app.yaml
+   ```
+
+2. **Database Tunnel (For Setup & Studio):**
+   *เปิด Terminal ใหม่รันค้างไว้:*
+   ```bash
+   kubectl port-forward svc/postgres-service 5435:5432
+   ```
+
+3. **Setup Database (Via Tunnel):**
+   Based on your OS, set the `DATABASE_URL` before running commands:
+   ```bash
+   # Windows
+   set DATABASE_URL=postgresql://albaly_user:albaly_password@localhost:5435/albaly_insights
+
+   # Mac/Linux
+   export DATABASE_URL="postgresql://albaly_user:albaly_password@localhost:5435/albaly_insights"
+
+   npx prisma generate
+   npx prisma db push
+   npx prisma db seed
+   ```
+
+4. **Application Tunnel:**
+   *เปิด Terminal ใหม่รันค้างไว้:*
+   ```bash
+   kubectl port-forward svc/albaly-app-service 7777:80
+   ```
+
+**Access:**
+- **App (K8s):** [http://localhost:7777](http://localhost:7777)
+- **Prisma Studio:** `npx prisma studio` (runs via the tunnel on port 5435 if environment variable is set as above)
+
+---
+
+## 🔐 Credentials (Seed Data)
 
 | Role | Email | Password | Access |
-|---|---|---|---|
-| **Admin** | `admin@albaly.com` | `password123` | Dashboard, Insights, Store, Product Management |
+| :--- | :--- | :--- | :--- |
+| **Admin** | `admin@albaly.com` | `password123` | Dashboard, Insights, Store, Management |
 | **Viewer** | `viewer@albaly.com` | `password123` | Store only (Shopping Cart) |
 
 ---
 
 ## 🏗️ Architecture Note
 
-This project follows **Clean Architecture** principles inside Next.js:
-- **Server Components** (`page.tsx`) act as Controllers, fetching data via **Services**.
-- **Services** (`src/services/*`) handle all DB interactions and business logic.
-- **Components** (`src/components/*`) are purely presentational and receive data via props.
-- **API Routes** (`src/app/api/*`) use a standardized `ApiResponse` wrapper for consistent error handling.
+This project follows **Clean Architecture** principles. Server Components act as Controllers, delegating Business Logic to Services, which interact with the DB via Prisma.

@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15-alpine
+        env:
+        - name: POSTGRES_USER
+          value: "albaly_user"
+        - name: POSTGRES_PASSWORD
+          value: "albaly_password"
+        - name: POSTGRES_DB
+          value: "albaly_insights"
+        ports:
+        - containerPort: 5432 # พอร์ตดั้งเดิมของ Postgres ที่รันอยู่ด้านใน
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+spec:
+  type: LoadBalancer # ใส่เป็น LoadBalancer เพื่อให้คุณใช้โปรแกรมอย่าง DBeaver หรือ pgAdmin ต่อเข้ามาที่ localhost:5435 ได้เลย
+  selector:
+    app: postgres
+  ports:
+  - port: 5435       # พอร์ตที่เราต้องการให้คนอื่นเรียกใช้
+    targetPort: 5432 # โยนทราฟฟิกไปที่พอร์ต 5432 ของคอนเทนเนอร์

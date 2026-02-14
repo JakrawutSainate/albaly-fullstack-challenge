@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: albaly-app-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: albaly-app
+  template:
+    metadata:
+      labels:
+        app: albaly-app
+    spec:
+      containers:
+      - name: albaly-app
+        image: albaly-app:local
+        imagePullPolicy: Never
+        env:
+        - name: DATABASE_URL
+          value: "postgresql://albaly_user:albaly_password@postgres-service:5435/albaly_insights"
+        ports:
+        - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: albaly-app-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: albaly-app
+  ports:
+  - port: 80
+    targetPort: 3000

@@ -23,7 +23,7 @@ async function StoreContent({ session }: { session: any }) {
         price: p.price,
         category: p.category,
         stock: p.inventorySnapshots[0]?.onHand || 0,
-        imageUrl: p.imageUrl,
+        imageUrl: p.imageUrl ?? undefined,
     }))
 
     if (formattedProducts.length === 0) {

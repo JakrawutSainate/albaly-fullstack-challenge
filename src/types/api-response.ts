@@ -76,7 +76,7 @@ export interface ActivityLogDTO {
     id: string;
     action: string;
     details?: string;
-    timestamp: string; // ISO string
+    createdAt: Date;// ISO string
 }
 
 export interface MonthlyPerformanceData {

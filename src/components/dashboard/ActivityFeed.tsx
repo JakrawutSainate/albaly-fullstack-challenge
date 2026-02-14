@@ -1,4 +1,3 @@
-
 import { ActivityLog } from '@prisma/client'
 
 interface ActivityFeedProps {
@@ -17,10 +16,18 @@ export default function ActivityFeed({ activities }: ActivityFeedProps) {
                         <div className="flex space-x-3">
                             <div className="flex-1 space-y-1">
                                 <div className="flex items-center justify-between">
-                                    <h3 className="text-sm font-medium text-gray-900 dark:text-white">{activity.action}</h3>
-                                    <p className="text-sm text-gray-500">{new Date(activity.createdAt).toLocaleDateString()}</p>
+                                    {/* เปลี่ยนจาก action เป็น status ตาม Prisma Schema ปัจจุบัน */}
+                                    <h3 className="text-sm font-medium text-gray-900 dark:text-white capitalize">
+                                        {activity.status}
+                                    </h3>
+                                    <p className="text-sm text-gray-500">
+                                        {new Date(activity.createdAt).toLocaleDateString()}
+                                    </p>
                                 </div>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">{activity.details} by {activity.user}</p>
+                                {/* เปลี่ยนจาก details/user เป็น description */}
+                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                    {activity.description}
+                                </p>
                             </div>
                         </div>
                     </li>

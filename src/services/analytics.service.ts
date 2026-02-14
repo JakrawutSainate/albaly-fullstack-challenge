@@ -33,31 +33,25 @@ export class AnalyticsService {
             where: { isActive: true }
         });
 
-        // Mocking customer growth logic for simplicity or implement similar MoM logic:
-        const activeCustomersGrowth = 5.0; // Placeholder for complicated customer retention query
+        // Mocking customer growth logic
+        const activeCustomersGrowth = 5.0;
 
         // 3. Inventory Status
-        // We want to know how many low stock items we have.
-        // Assuming we look at the latest snapshot for each product? 
-        // Or simpler: count all products, and maybe check recent low stock snapshots? 
-        // Let's use Product count as base, and check latest snapshots for status.
-        // For simplicity in this challenge, let's count total items on hand from latest snapshots.
-
-        // Get latest snapshot date
+        // แก้ไข: เปลี่ยนจาก snapshotDate เป็น createdAt ให้ตรงกับ Prisma Schema
         const latestSnapshot = await prisma.inventorySnapshot.findFirst({
-            orderBy: { snapshotDate: 'desc' }
+            orderBy: { createdAt: 'desc' }
         });
 
         let inventoryCount = 0;
         if (latestSnapshot) {
             const latestSnapshotsAgg = await prisma.inventorySnapshot.aggregate({
-                where: { snapshotDate: latestSnapshot.snapshotDate },
+                where: { createdAt: latestSnapshot.createdAt }, // แก้ไขตรงนี้ด้วย
                 _sum: { onHand: true }
             });
             inventoryCount = latestSnapshotsAgg._sum.onHand || 0;
         }
 
-        const inventoryGrowth = -2.0; // Mocked
+        const inventoryGrowth = -2.0;
 
         return {
             totalSales,
@@ -70,11 +64,6 @@ export class AnalyticsService {
     }
 
     async getMonthlyPerformance(): Promise<MonthlyPerformanceData[]> {
-        // Group sales by month. 
-        // Prisma doesn't support direct date truncation in groupBy easily without raw query, 
-        // but we can fetch data and aggregate in JS for simplicity or use raw query.
-        // Let's use raw query for efficiency with Postgres.
-
         const sales = await prisma.$queryRaw`
             SELECT TO_CHAR("createdAt", 'Mon') as month, SUM(amount) as value
             FROM "Sale"
@@ -83,7 +72,6 @@ export class AnalyticsService {
             ORDER BY EXTRACT(MONTH FROM "createdAt") ASC
         `;
 
-        // Ensure typing
         return (sales as any[]).map(s => ({
             month: s.month,
             value: Number(s.value)
@@ -96,7 +84,6 @@ export class AnalyticsService {
         });
 
         if (!latestFunnel) {
-            // Default fallback or 'seed' data if DB is empty
             return {
                 visitors: 5000,
                 views: 3500,
@@ -107,29 +94,31 @@ export class AnalyticsService {
 
         return {
             visitors: latestFunnel.visitors,
-            views: latestFunnel.views,
-            cart: latestFunnel.cart,
-            purchase: latestFunnel.purchase
+            views: latestFunnel.productViews,
+            cart: latestFunnel.addToCart,
+            purchase: latestFunnel.purchases
         };
     }
 
     async getRecentActivity() {
+        // แก้ไข: เปลี่ยน select ให้ใช้ status และ description แทน action และ details
         const logs = await prisma.activityLog.findMany({
             take: 5,
             orderBy: { createdAt: 'desc' },
             select: {
                 id: true,
-                action: true,
-                details: true,
+                status: true,
+                description: true,
                 createdAt: true
             }
         });
 
-        return logs.map((log: any) => ({
+        // แก้ไข: map ข้อมูลให้ตรงกับที่ Frontend (ActivityFeed) คาดหวัง
+        return logs.map(log => ({
             id: log.id,
-            action: log.action,
-            details: log.details || undefined, // Map explicitly or use object spread, just being safe
-            timestamp: log.createdAt.toISOString()
+            status: log.status,
+            description: log.description || '',
+            createdAt: log.createdAt // หน้า Frontend ของเราต้องการเป็น Object Date ไม่ใช่ String
         }));
     }
 }

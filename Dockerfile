@@ -19,7 +19,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # ใช้ค่า Dummy สำหรับ Build
-ENV DATABASE_URL="postgresql://postgres:password@localhost:5432/db"
+ENV DATABASE_URL="postgresql://postgres:password@localhost:5435/db"
 ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN npx prisma generate
