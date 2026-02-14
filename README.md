@@ -5,6 +5,7 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.0-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-24.0-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![Kubernetes](https://img.shields.io/badge/Kubernetes-316CE6?style=for-the-badge&logo=kubernetes&logoColor=white)
 ![Prisma](https://img.shields.io/badge/Prisma-5.22-2D3748?style=for-the-badge&logo=prisma&logoColor=white)
 
 Production-ready dashboard application built with **Next.js 16.1.6**, **React 19**, **TypeScript**, **Tailwind CSS 4**, and **PostgreSQL (Docker/K8s)**. Designed with a strict **Clean Architecture** approach separating UI from Business Logic.
