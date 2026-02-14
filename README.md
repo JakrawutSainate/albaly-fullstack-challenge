@@ -160,6 +160,19 @@ prisma/
 
 ---
 
+---
+
+## 🤖 AI-Assisted Development
+This project was developed using a modern **AI-Pair Programming workflow** to ensure rapid iteration, high code quality, and robust debugging.
+
+- **Cursor**: Used as the primary IDE for intelligent code navigation and context-aware refactoring.
+- **Claude 3.5 Sonnet / Claude Code**: Leveraged for complex logic implementation and architectural validation.
+- **Google Gemini**: Utilized for real-time problem-solving, documentation analysis, and Kubernetes configuration optimization.
+
+*Note: AI was used as a co-pilot to accelerate development while maintaining strict adherence to the **Clean Architecture** principles outlined below.*
+
+---
+
 ## 🏗️ Architecture Note
 
 This project follows **Clean Architecture** principles:
